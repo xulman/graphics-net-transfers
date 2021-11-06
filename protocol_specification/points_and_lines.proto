@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package transfers_graphics_protocol;
+option java_package = "cz.it4i.ulman.transfers.graphics.protocol";
+
+service PointsAndLines {
+	rpc sendBall (PointAsBall) returns (Empty) {}
+	rpc sendEllipsoid (PointAsEllipsoid) returns (Empty) {}
+	rpc sendLineWithPos (LineWithPositions) returns (Empty) {}
+	rpc sendLineWithIDs (LineWithIDs) returns (Empty) {}
+	rpc sendTick (TickMessage) returns (Empty) {}
+}
+
+message Empty {
+}
+
+message PointAsBall {
+	uint64 ID = 1;       // non-negative fixed ID to reference this point
+	float x = 2;         // x-coordinate of the point's centre
+	float y = 3;         // y-coordinate of the point's centre
+	float z = 4;         // z-coordinate of the point's centre
+	int32 t = 5;         // temporal coordinate of the point
+	string label = 6;    // label associated with this point, need not be unique
+	float color_r = 7;   // red-element of the point's color, in range 0 to 1 inclusive
+	float color_g = 8;   // green-element of the point's color, in range 0 to 1 inclusive
+	float color_b = 9;   // blue-element of the point's color, in range 0 to 1 inclusive
+	float radius = 10;   // radius in same units as x,y,z to draw this point as a sphere
+}
+
+message PointAsEllipsoid {
+	uint64 ID = 1;       // non-negative fixed ID to reference this point
+	float x = 2;         // x-coordinate of the point's centre
+	float y = 3;         // y-coordinate of the point's centre
+	float z = 4;         // z-coordinate of the point's centre
+	int32 t = 5;         // temporal coordinate of the point
+	string label = 6;    // label associated with this point, need not be unique
+	float color_r = 7;   // red-element of the point's color, in range 0 to 1 inclusive
+	float color_g = 8;   // green-element of the point's color, in range 0 to 1 inclusive
+	float color_b = 9;   // blue-element of the point's color, in range 0 to 1 inclusive
+	repeated float mat_elem = 10; // elements of a 3x3 matrix to define shape of the ellipsoid,
+	                              // give first ROW, then second ROW
+}
+
+message LineWithPositions {
+	uint64 ID = 1;       // non-negative fixed ID to reference this line
+	float from_x = 2;    // x-coordinate of the line's start
+	float from_y = 3;    // y-coordinate of the line's start
+	float from_z = 4;    // z-coordinate of the line's start
+	float to_x = 5;      // x-coordinate of the line's end
+	float to_y = 6;      // y-coordinate of the line's end
+	float to_z = 7;      // z-coordinate of the line's end
+	string label = 8;    // label associated with this line, need not be unique
+	float color_r = 9;   // red-element of the line's color, in range 0 to 1 inclusive
+	float color_g = 10;  // green-element of the line's color, in range 0 to 1 inclusive
+	float color_b = 11;  // blue-element of the line's color, in range 0 to 1 inclusive
+	float radius = 12;   // radius in same units as x,y,z to draw this line as a cylinder
+}
+
+message LineWithIDs {
+	uint64 ID = 1;       // non-negative fixed ID to reference this line
+	uint64 from_pointID = 2;  // x-coordinate of the line's start
+	uint64 to_pointID = 3;    // x-coordinate of the line's end
+	string label = 4;    // label associated with this line, need not be unique
+	float color_r = 5;   // red-element of the line's color, in range 0 to 1 inclusive
+	float color_g = 6;   // green-element of the line's color, in range 0 to 1 inclusive
+	float color_b = 7;   // blue-element of the line's color, in range 0 to 1 inclusive
+	float radius = 8;    // radius in same units as x,y,z to draw this line as a cylinder
+}
+
+message TickMessage {
+	string message = 1;  // any message which the server is asked to possibly display
+}
