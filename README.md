@@ -3,7 +3,8 @@
 ... a communication protocol specification in the [Google RPC tooling](https://grpc.io/),
 and a demo (and thus plain stupid) client and server code in Python and in Java.
 
-[It attempts to mirror this.](https://docs.google.com/document/d/1n-ctWjGaVLyosTd_52GeAafeYUdEu-TTGuJQjoq6q2o/edit)
+[It attempts to mirror this](https://docs.google.com/document/d/1n-ctWjGaVLyosTd_52GeAafeYUdEu-TTGuJQjoq6q2o/edit)
+with this [communication protocol.](https://github.com/xulman/graphics-net-transfers/blob/master/protocol_specification/points_and_lines.proto)
 
 
 # How To Build
@@ -20,7 +21,7 @@ In what follows, I assume you're in the root folder of this repo.
 ## Python
 ### Generate Auxiliary GRPC Files
 First, make sure the `grpcio` package is available in your Python installation.
-How to achieve it is [best described at Google,](https://grpc.io/docs/languages/python/quickstart/#prerequisites),
+How to achieve it is [best described at Google,](https://grpc.io/docs/languages/python/quickstart/#prerequisites)
 but you can take shortcut:
 
 ```
@@ -44,7 +45,7 @@ peer_in_python/points_and_lines_pb2.py
 peer_in_python/points_and_lines_pb2_grpc.py
 ```
 
-The former describes the your `.proto` communication protocol, the later contains the boilerplate code.
+The former describes the `.proto` communication protocol, the later contains the boilerplate code.
 
 ### Compile Demo programs
 It's Python, so the title is principally wrong. Just fire:
@@ -57,7 +58,8 @@ python3 peer_in_python/demo_client.py
 ## Java
 ### Generate Auxiliary GRPC Files
 This repo is using the maven to manage the Java project. And the maven generates the necessary files automagically
-[because of these `pom.xml` lines](https://github.com/grpc/grpc-java/blob/master/examples/pom.xml) during the compilation.
+[because of these `pom.xml` lines](https://github.com/xulman/graphics-net-transfers/blob/6ab64167ed4a048b37f1f206b0b6572df0a062a2/peer_in_java/pom.xml#L85-L143)
+during the compilation.
 
 Explicit trigger of the generating mechanisms could be achieved, e.g., with:
 
