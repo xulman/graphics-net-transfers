@@ -1,0 +1,151 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>30.0.0</version>
+		<relativePath />
+	</parent>
+
+	<groupId>cz.it4i.ulman.transfers.graphics</groupId>
+	<artifactId>graphics-net-transfers</artifactId>
+	<version>0.9-SNAPSHOT</version>
+
+	<organization>
+		<name>IT4Innovations</name>
+		<url>https://www.it4i.cz/en/</url>
+	</organization>
+
+	<name>graphics-net-transfers</name>
+	<description>Java implementation of a proprietary graphics primitives transfer protocol</description>
+	<url>https://github.com/xulman/graphics-net-transfers</url>
+	<inceptionYear>2021</inceptionYear>
+
+	<packaging>jar</packaging>
+	<licenses>
+		<license>
+			<name>BSD-2-Clause</name>
+			<url>https://choosealicense.com/licenses/bsd-2-clause/</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>xulman</id>
+			<name>Vladimír Ulman</name>
+			<url>http://www.fi.muni.cz/~xulman/</url>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>None</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>NONE</name>
+		</mailingList>
+	</mailingLists>
+
+
+	<scm>
+		<connection>scm:git:git://github.com/xulman/graphics-net-transfers</connection>
+		<developerConnection>scm:git:git://github.com/xulman/graphics-net-transfers</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/xulman/graphics-net-transfers</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>http://github.com/xulman/graphics-net-transfers/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>None</system>
+	</ciManagement>
+
+	<properties>
+		<license.licenseName>BSD simplified (2 clause)</license.licenseName>
+		<license.copyrightOwners>Vladimír Ulman</license.copyrightOwners>
+		<license.projectName>graphics-net-transfers</license.projectName>
+		<package-name>cz.it4i.ulman.graphicsnettransfersjava</package-name>
+	</properties>
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>1.6.2</version>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>org.xolstice.maven.plugins</groupId>
+				<artifactId>protobuf-maven-plugin</artifactId>
+				<version>0.6.1</version>
+				<configuration>
+					<protocArtifact>com.google.protobuf:protoc:3.17.3:exe:${os.detected.classifier}</protocArtifact>
+					<pluginId>grpc-java</pluginId>
+					<pluginArtifact>io.grpc:protoc-gen-grpc-java:1.41.0:exe:${os.detected.classifier}</pluginArtifact>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>compile-custom</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>scijava.public</id>
+			<url>http://maven.scijava.org/content/groups/public</url>
+		</repository>
+		<repository>
+			<id>it4i</id>
+			<url>https://artifactory.cs.vsb.cz/it4i/</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<!-- gRPC -->
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-netty-shaded</artifactId>
+			<version>1.41.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-protobuf</artifactId>
+			<version>1.41.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-stub</artifactId>
+			<version>1.41.0</version>
+		</dependency>
+	</dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>it4i</id>
+			<url>https://artifactory.cs.vsb.cz/it4i/</url>
+		</repository>
+	</distributionManagement>
+</project>
