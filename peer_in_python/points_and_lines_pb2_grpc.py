@@ -14,22 +14,22 @@ class PointsAndLinesStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.sendBall = channel.unary_unary(
+        self.sendBall = channel.stream_unary(
                 '/transfers_graphics_protocol.PointsAndLines/sendBall',
                 request_serializer=points__and__lines__pb2.PointAsBall.SerializeToString,
                 response_deserializer=points__and__lines__pb2.Empty.FromString,
                 )
-        self.sendEllipsoid = channel.unary_unary(
+        self.sendEllipsoid = channel.stream_unary(
                 '/transfers_graphics_protocol.PointsAndLines/sendEllipsoid',
                 request_serializer=points__and__lines__pb2.PointAsEllipsoid.SerializeToString,
                 response_deserializer=points__and__lines__pb2.Empty.FromString,
                 )
-        self.sendLineWithPos = channel.unary_unary(
+        self.sendLineWithPos = channel.stream_unary(
                 '/transfers_graphics_protocol.PointsAndLines/sendLineWithPos',
                 request_serializer=points__and__lines__pb2.LineWithPositions.SerializeToString,
                 response_deserializer=points__and__lines__pb2.Empty.FromString,
                 )
-        self.sendLineWithIDs = channel.unary_unary(
+        self.sendLineWithIDs = channel.stream_unary(
                 '/transfers_graphics_protocol.PointsAndLines/sendLineWithIDs',
                 request_serializer=points__and__lines__pb2.LineWithIDs.SerializeToString,
                 response_deserializer=points__and__lines__pb2.Empty.FromString,
@@ -44,25 +44,25 @@ class PointsAndLinesStub(object):
 class PointsAndLinesServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def sendBall(self, request, context):
+    def sendBall(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def sendEllipsoid(self, request, context):
+    def sendEllipsoid(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def sendLineWithPos(self, request, context):
+    def sendLineWithPos(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def sendLineWithIDs(self, request, context):
+    def sendLineWithIDs(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -77,22 +77,22 @@ class PointsAndLinesServicer(object):
 
 def add_PointsAndLinesServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'sendBall': grpc.unary_unary_rpc_method_handler(
+            'sendBall': grpc.stream_unary_rpc_method_handler(
                     servicer.sendBall,
                     request_deserializer=points__and__lines__pb2.PointAsBall.FromString,
                     response_serializer=points__and__lines__pb2.Empty.SerializeToString,
             ),
-            'sendEllipsoid': grpc.unary_unary_rpc_method_handler(
+            'sendEllipsoid': grpc.stream_unary_rpc_method_handler(
                     servicer.sendEllipsoid,
                     request_deserializer=points__and__lines__pb2.PointAsEllipsoid.FromString,
                     response_serializer=points__and__lines__pb2.Empty.SerializeToString,
             ),
-            'sendLineWithPos': grpc.unary_unary_rpc_method_handler(
+            'sendLineWithPos': grpc.stream_unary_rpc_method_handler(
                     servicer.sendLineWithPos,
                     request_deserializer=points__and__lines__pb2.LineWithPositions.FromString,
                     response_serializer=points__and__lines__pb2.Empty.SerializeToString,
             ),
-            'sendLineWithIDs': grpc.unary_unary_rpc_method_handler(
+            'sendLineWithIDs': grpc.stream_unary_rpc_method_handler(
                     servicer.sendLineWithIDs,
                     request_deserializer=points__and__lines__pb2.LineWithIDs.FromString,
                     response_serializer=points__and__lines__pb2.Empty.SerializeToString,
@@ -113,7 +113,7 @@ class PointsAndLines(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def sendBall(request,
+    def sendBall(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -123,14 +123,14 @@ class PointsAndLines(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.PointsAndLines/sendBall',
+        return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.PointsAndLines/sendBall',
             points__and__lines__pb2.PointAsBall.SerializeToString,
             points__and__lines__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def sendEllipsoid(request,
+    def sendEllipsoid(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -140,14 +140,14 @@ class PointsAndLines(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.PointsAndLines/sendEllipsoid',
+        return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.PointsAndLines/sendEllipsoid',
             points__and__lines__pb2.PointAsEllipsoid.SerializeToString,
             points__and__lines__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def sendLineWithPos(request,
+    def sendLineWithPos(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -157,14 +157,14 @@ class PointsAndLines(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.PointsAndLines/sendLineWithPos',
+        return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.PointsAndLines/sendLineWithPos',
             points__and__lines__pb2.LineWithPositions.SerializeToString,
             points__and__lines__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def sendLineWithIDs(request,
+    def sendLineWithIDs(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -174,7 +174,7 @@ class PointsAndLines(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.PointsAndLines/sendLineWithIDs',
+        return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.PointsAndLines/sendLineWithIDs',
             points__and__lines__pb2.LineWithIDs.SerializeToString,
             points__and__lines__pb2.Empty.FromString,
             options, channel_credentials,

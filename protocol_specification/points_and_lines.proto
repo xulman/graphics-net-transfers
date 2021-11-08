@@ -4,10 +4,10 @@ package transfers_graphics_protocol;
 option java_package = "cz.it4i.ulman.transfers.graphics.protocol";
 
 service PointsAndLines {
-	rpc sendBall (PointAsBall) returns (Empty) {}
-	rpc sendEllipsoid (PointAsEllipsoid) returns (Empty) {}
-	rpc sendLineWithPos (LineWithPositions) returns (Empty) {}
-	rpc sendLineWithIDs (LineWithIDs) returns (Empty) {}
+	rpc sendBall (stream PointAsBall) returns (Empty) {}
+	rpc sendEllipsoid (stream PointAsEllipsoid) returns (Empty) {}
+	rpc sendLineWithPos (stream LineWithPositions) returns (Empty) {}
+	rpc sendLineWithIDs (stream LineWithIDs) returns (Empty) {}
 	rpc sendTick (TickMessage) returns (Empty) {}
 }
 

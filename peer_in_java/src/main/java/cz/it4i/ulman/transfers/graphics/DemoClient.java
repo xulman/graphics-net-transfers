@@ -5,8 +5,9 @@ import cz.it4i.ulman.transfers.graphics.protocol.PointsAndLinesOuterClass;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
+
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DemoClient {
@@ -28,23 +29,36 @@ public class DemoClient {
 			.build();
 
 		try {
-			final PointsAndLinesGrpc.PointsAndLinesBlockingStub comm = PointsAndLinesGrpc.newBlockingStub(channel);
+			final PointsAndLinesGrpc.PointsAndLinesStub comm = PointsAndLinesGrpc.newStub(channel);
 
-			PointsAndLinesOuterClass.PointAsBall p = PointsAndLinesOuterClass.PointAsBall.newBuilder()
-				.setID(20)
-				.setX(11.2f)
-				.setY(11.3f)
-				.setZ(11.4f)
-				.setT(3)
-				.setLabel("testing point j")
-				.setColorR(0.91f)
-				.setColorG(0.11f)
-				.setColorB(0.06f)
-				.setRadius(3.2f)
-				.build();
-			LOGGER.info("Sending point: ");
-			LOGGER.info( p.toString() );
-			comm.sendBall( p );
+			StreamObserver<PointsAndLinesOuterClass.PointAsBall> requestStream = comm.sendBall(new EmptyIgnoringStreamObservers());
+			for (int id = 20; id < 25; ++id) {
+				PointsAndLinesOuterClass.PointAsBall p = PointsAndLinesOuterClass.PointAsBall.newBuilder()
+					.setID(id)
+					.setX(11.2f +id)
+					.setY(11.3f)
+					.setZ(11.4f)
+					.setT(3)
+					.setLabel("testing point "+id)
+					.setColorR(0.91f)
+					.setColorG(0.11f)
+					.setColorB(0.06f)
+					.setRadius(3.2f)
+					.build();
+				LOGGER.info("Sending point: ");
+				LOGGER.info( p.toString() );
+				requestStream.onNext(p);
+			}
+			requestStream.onCompleted();
+
+			final PointsAndLinesOuterClass.TickMessage msg = PointsAndLinesOuterClass.TickMessage.newBuilder()
+					.setMessage("Java demo client has sent this message.")
+					.build();
+			comm.sendTick(msg, new EmptyIgnoringStreamObservers());
+
+			System.out.println("Waiting for the delivery before exit");
+			Thread.sleep(500);
+			System.out.println("Tired of waiting... giving up.");
 
 		} catch (StatusRuntimeException e) {
 			LOGGER.warning("RPC client-side failed, details follow:");
