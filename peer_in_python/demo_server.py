@@ -9,19 +9,24 @@ serverName = "demoServer"
 serverPort = 9081
 
 class IncomingPLProcessor(points_and_lines_pb2_grpc.PointsAndLinesServicer):
-    def sendBall(self, request, context):
-        print("Got Ball request with params:");
-        print("ID = "+str(request.ID)+"\n"
-            "x = "+str(request.x)+"\n"
-            "y = "+str(request.y)+"\n"
-            "z = "+str(request.z)+"\n"
-            "t = "+str(request.t)+"\n"
-            "label = "+str(request.label)+"\n"
-            "color_r = "+str(request.color_r)+"\n"
-            "color_g = "+str(request.color_g)+"\n"
-            "color_b = "+str(request.color_b)+"\n"
-            "radius = "+str(request.radius))
+    def sendBall(self, request_iter, context):
+        for request in request_iter:
+            print("Got Ball request with params:");
+            print("ID = "+str(request.ID)+"\n"
+                "x = "+str(request.x)+"\n"
+                "y = "+str(request.y)+"\n"
+                "z = "+str(request.z)+"\n"
+                "t = "+str(request.t)+"\n"
+                "label = "+str(request.label)+"\n"
+                "color_r = "+str(request.color_r)+"\n"
+                "color_g = "+str(request.color_g)+"\n"
+                "color_b = "+str(request.color_b)+"\n"
+                "radius = "+str(request.radius))
 
+        return points_and_lines_pb2.Empty()
+
+    def sendTick(self, request, context):
+        print("Got tick message: "+request.message)
         return points_and_lines_pb2.Empty()
 
 try:

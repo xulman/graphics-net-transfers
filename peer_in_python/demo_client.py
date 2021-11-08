@@ -1,4 +1,5 @@
 from grpc import insecure_channel, RpcError
+from copy import copy
 import points_and_lines_pb2
 import points_and_lines_pb2_grpc
 
@@ -22,7 +23,21 @@ try:
     # the transfer itself
     print("Sending: "+str(p))
     comm = points_and_lines_pb2_grpc.PointsAndLinesStub( insecure_channel(serverURL) )
-    comm.sendBall( p )
+
+    Ps = list()
+    for i in range(5):
+        p.x = (i  % 50) *5
+        p.y = (i // 50) *5
+        p.ID = i+10
+        p.label = "tesing point #"+str(p.ID)
+
+        Ps.append(copy(p))
+
+    comm.sendBall( iter(Ps) )
+
+    msg = points_and_lines_pb2.TickMessage()
+    msg.message = "Demo sent you "+str(len(Ps))+" items"
+    comm.sendTick( msg )
 
 except RpcError as e:
     print("Some connection error, details follow:")
