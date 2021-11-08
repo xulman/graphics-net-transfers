@@ -38,7 +38,7 @@ try:
     serv.start()
     print("Server ready, and listening for next 120 secs")
     sleep(120)
-    serv.stop()
+    serv.stop(5)
 
 except RpcError as e:
     print("Some connection error, details follow:")
