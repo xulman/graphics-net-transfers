@@ -31,15 +31,6 @@ public class DemoClient {
 		try {
 			final PointsAndLinesGrpc.PointsAndLinesStub comm = PointsAndLinesGrpc.newStub(channel);
 
-			class EmptyIgnoringStreamObservers implements StreamObserver<PointsAndLinesOuterClass.Empty> {
-				@Override
-				public void onNext(PointsAndLinesOuterClass.Empty empty) {}
-				@Override
-				public void onError(Throwable throwable) {}
-				@Override
-				public void onCompleted() { LOGGER.info("got EMPTY response from the server"); }
-			}
-
 			StreamObserver<PointsAndLinesOuterClass.PointAsBall> requestStream = comm.sendBall(new EmptyIgnoringStreamObservers());
 			for (int id = 20; id < 25; ++id) {
 				PointsAndLinesOuterClass.PointAsBall p = PointsAndLinesOuterClass.PointAsBall.newBuilder()
