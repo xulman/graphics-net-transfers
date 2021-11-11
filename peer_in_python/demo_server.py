@@ -22,7 +22,40 @@ class IncomingPLProcessor(points_and_lines_pb2_grpc.PointsAndLinesServicer):
                 "color_g = "+str(request.color_g)+"\n"
                 "color_b = "+str(request.color_b)+"\n"
                 "radius = "+str(request.radius))
+        return points_and_lines_pb2.Empty()
 
+    def sendEllipsoid(self, request_iter, context):
+        print("Ain't touching this now...")
+        return points_and_lines_pb2.Empty()
+
+    def sendLineWithPos(self, request_iter, context):
+        for request in request_iter:
+            print("Got Line-POS request with params:");
+            print("ID = "+str(request.ID)+"\n"
+                "from_x = "+str(request.from_x)+"\n"
+                "from_y = "+str(request.from_y)+"\n"
+                "from_z = "+str(request.from_z)+"\n"
+                "to_x = "+str(request.to_x)+"\n"
+                "to_y = "+str(request.to_y)+"\n"
+                "to_z = "+str(request.to_z)+"\n"
+                "label = "+str(request.label)+"\n"
+                "color_r = "+str(request.color_r)+"\n"
+                "color_g = "+str(request.color_g)+"\n"
+                "color_b = "+str(request.color_b)+"\n"
+                "radius = "+str(request.radius))
+        return points_and_lines_pb2.Empty()
+
+    def sendLineWithIDs(self, request_iter, context):
+        for request in request_iter:
+            print("Got Line-IDs request with params:");
+            print("ID = "+str(request.ID)+"\n"
+                "from_pointID = "+str(request.from_pointID)+"\n"
+                "to_pointID = "+str(request.to_pointID)+"\n"
+                "label = "+str(request.label)+"\n"
+                "color_r = "+str(request.color_r)+"\n"
+                "color_g = "+str(request.color_g)+"\n"
+                "color_b = "+str(request.color_b)+"\n"
+                "radius = "+str(request.radius))
         return points_and_lines_pb2.Empty()
 
     def sendTick(self, request, context):
