@@ -13,7 +13,7 @@
 # limitations under the License.
 """Runs protoc with the gRPC plugin to generate messages and gRPC stubs."""
 
-from grpc_tools import protoc
+from grpc_tools import protoc # type: ignore
 
 protoc.main((
     '',
