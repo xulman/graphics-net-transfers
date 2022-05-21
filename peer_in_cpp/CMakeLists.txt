@@ -59,9 +59,12 @@ target_link_libraries(grpc_proto_lib ${gRPC_LIBS})
 
 set(LIBS ${LIBS} grpc_proto_lib)
 
-# ======== ADDING TARGETS TO BUILD ========
+# ======= ADDING EXECUTABLES TO BUILD =======
 
-add_executable(main src/main.cpp)
-target_link_libraries(main PRIVATE ${LIBS})
+add_executable(demo_server src/demo_server.cpp)
+target_link_libraries(demo_server PRIVATE ${LIBS})
+
+add_executable(demo_client src/demo_client.cpp)
+target_link_libraries(demo_client PRIVATE ${LIBS})
 
 
