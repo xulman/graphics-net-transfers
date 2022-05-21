@@ -35,11 +35,11 @@ or run:
 pip install -r requirements.txt 
 ```
 
-inside *peer\_in\_python* folder
+inside `peer\_in\_python` folder
 
 If `pip` is not recognized by your shell, try to substitute it with `python -m pip`, e.g.:
 ```
-python -m pip install -r requirements
+python -m pip install -r requirements.txt
 ```
 
 
