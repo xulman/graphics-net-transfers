@@ -23,6 +23,17 @@ void print_status_err(const grpc::Status& status) {
 	          << "\nDetails: " << status.error_details() << '\n';
 }
 
+void print_point(const tgp::PointAsBall& point) {
+	std::cout << "PointAsBall structure:"
+	          << "\nid: " << point.id() << "\nx: " << point.x()
+	          << "\ny: " << point.y() << "\nz: " << point.z()
+	          << "\nt: " << point.t() << "\nlabel: " << point.label()
+	          << "\ncolor_r: " << point.color_r()
+	          << "\ncolor_g: " << point.color_g()
+	          << "\ncolor_b: " << point.color_b()
+	          << "\nradius: " << point.radius() << '\n';
+}
+
 int main() {
 	// a test point to be transfered over
 	auto point = tgp::PointAsBall();
@@ -39,7 +50,6 @@ int main() {
 	point.set_radius(3.1);
 
 	// the transfer itself
-	std::cout << "Sending: ID: " << point.id() << '\n';
 
 	auto stub = tgp::PointsAndLines::NewStub(
 	    grpc::CreateChannel(SERVER_URL, grpc::InsecureChannelCredentials()));
@@ -61,6 +71,8 @@ int main() {
 	    stub->sendBall(&context, &empty));
 
 	for (const auto& p : points) {
+		print_point(p);
+		std::cout << '\n';
 		if (!writer->Write(p))
 			break; // broken stream
 	}
