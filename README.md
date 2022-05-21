@@ -25,9 +25,20 @@ How to achieve it is [best described at Google,](https://grpc.io/docs/languages/
 but you can take shortcut:
 
 ```
-python -m pip install grpcio
-python -m pip install grpcio-tools
+pip install grpcio
+pip install grpcio-tools
 ```
+
+or run:
+
+```
+pip install -r requirements.txt 
+```
+
+inside *peer\_in\_python* folder
+
+(If *pip* is not recognized by your shell, try to substitute it with *python -m pip*, eg. python -m pip install -r requirements)
+
 
 The former installs the main executive library, the later is for generating the
 communication-wrapping code. Both installing steps clearly needs to be done only once.
