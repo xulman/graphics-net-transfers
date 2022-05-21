@@ -73,7 +73,7 @@ public class DemoServer extends PointsAndLinesGrpc.PointsAndLinesImplBase {
 
 
 	public static void main(String[] args) {
-		// Run a service running on the local machine on port 7000
+		// Run a service running on the local machine on port 9081
 		//NB: local machine is actually an obvious hostname, hence it is not specified anywhere explicitly
 		final int serverPort = 9081;
 
