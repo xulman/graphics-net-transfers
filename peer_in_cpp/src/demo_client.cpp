@@ -9,11 +9,11 @@
 #include "points_and_lines.grpc.pb.h"
 #include "points_and_lines.pb.h"
 
-// this is where it should be transfered to
-const std::string SERVER_URL = "localhost:9081";
-
 // namespace alias
 namespace tgp = transfers_graphics_protocol;
+
+// this is where it should be transfered to
+const std::string SERVER_URL = "localhost:9081";
 
 void print_status_err(const grpc::Status& status) {
 	assert(!status.ok());
@@ -71,6 +71,7 @@ int main() {
 	    stub->sendBall(&context, &empty));
 
 	for (const auto& p : points) {
+		std::cout << "Sending point: \n";
 		print_point(p);
 		std::cout << '\n';
 		if (!writer->Write(p))
