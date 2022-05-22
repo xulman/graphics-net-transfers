@@ -145,7 +145,7 @@ make
 
 inside your build folder (`peer_in_cpp/build`).
 
-The project also manages to generate code from `.proto` files create corresponding header and source files, so you do not to worry about it. 
+The cmake also manages the generation of code from `.proto` files to create corresponding header and source files, so you do not to worry about it. 
 
 After compilation is complete, two executables shall appear inside `build` folder:
 
