@@ -39,7 +39,7 @@ you can also run:
 pip install -r requirements.txt 
 ```
 
-inside `peer\_in\_python` folder
+inside `peer_in_python` folder.
 
 If `pip` is not recognized by your shell, try to substitute it with `python -m pip`, e.g.:
 ```
@@ -117,16 +117,16 @@ git clone https://github.com/microsoft/vcpkg ~/vcpkg
 ```
 
 ### Initialization of cmake project
-Start with creating `build` folder inside `peer\_in\_cpp`. E.g. with command:
+Start with creating `build` folder inside `peer_in_cpp`. E.g. with command:
 
 ```
-mkdir -p peer_in_cpp\build
+mkdir -p peer_in_cpp/build
 ```
 
 inside `build` folder, use `cmake` to generate build files.
 
 ```
-cd peer_in_cpp\build
+cd peer_in_cpp/build
 cmake -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake ../
 ```
 
@@ -143,11 +143,11 @@ After initialization, run
 make
 ```
 
-inside your build folder (`peer\_in\_cpp\\build`).
+inside your build folder (`peer_in_cpp/build`).
 
-The project also manages to generate code from *proto* files create corresponding header and source files, so you do not to worry about it. 
+The project also manages to generate code from `.proto` files create corresponding header and source files, so you do not to worry about it. 
 
 After compilation is complete, two executables shall appear inside `build` folder:
 
-`demo_client` and `demo_server`
+**demo_client** and **demo_server**
 
