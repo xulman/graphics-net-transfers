@@ -1,7 +1,7 @@
 # What Is Here?
 
 ... a communication protocol specification in the [Google RPC tooling](https://grpc.io/),
-and a demo (and thus plain stupid) client and server code in Python and in Java.
+and a demo (and thus plain stupid) client and server code in Python, Java and C++.
 
 [It attempts to mirror this](https://docs.google.com/document/d/1n-ctWjGaVLyosTd_52GeAafeYUdEu-TTGuJQjoq6q2o/edit)
 with this [communication protocol.](https://github.com/xulman/graphics-net-transfers/blob/master/protocol_specification/points_and_lines.proto)
@@ -13,7 +13,7 @@ the communication protocol `.proto` file(s) are compiled and language-specific
 files are generated. The generated files essentially communicate what messages
 can be passed around and provide some boilerplate code to create client and/or
 server. The second stage refers to the compilation of demo client and server
-programs. We provide them in both Python and Java. The second stage is consuming
+programs. We provide them in all Python, Java and C++. The second stage is consuming
 products from the first stage.
 
 In what follows, I assume you're in the root folder of this repo.
@@ -29,7 +29,11 @@ pip install grpcio
 pip install grpcio-tools
 ```
 
-or run:
+The former installs the main executive library, the later is for generating the
+communication-wrapping code. Both installing steps clearly needs to be done only once.
+
+
+you can also run:
 
 ```
 pip install -r requirements.txt 
@@ -42,9 +46,6 @@ If `pip` is not recognized by your shell, try to substitute it with `python -m p
 python -m pip install -r requirements.txt
 ```
 
-
-The former installs the main executive library, the later is for generating the
-communication-wrapping code. Both installing steps clearly needs to be done only once.
 
 Second, (re)generate the boilerplate code by calling:
 
@@ -102,3 +103,51 @@ mvn clean package
 or directly from your IDE. Sometimes IDEs, however, have their own heads, so
 closing the IDE, removing *dotIDEfiles* and the `target` folder and setting up
 the project again from scratch helped me already a couple of times.
+
+## C++
+### Getting VCPKG
+This project is using [vcpkg](https://github.com/microsoft/vcpkg) to collect all of its dependecies. VCPKG is package manager created by Microsoft. Simply put, it is some kind of equivalent to python's *pip* and java's *maven*. 
+
+If you are new to `VCPKG` (and completely lost) you can run following set of commands, that will download and initialize vcpkg into your `/home/xxxUserxxx/` folder 
+(These lines assumes you have UNIX operating system. VCPKG is also for windows and the steps are almost the same).
+
+```
+git clone https://github.com/microsoft/vcpkg ~/vcpkg
+~/vcpkg/bootstrap-vcpkg.sh
+```
+
+### Initialization of cmake project
+Start with creating `build` folder inside `peer\_in\_cpp`. E.g. with command:
+
+```
+mkdir -p peer_in_cpp\build
+```
+
+inside `build` folder, use `cmake` to generate build files.
+
+```
+cd peer_in_cpp\build
+cmake -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake ../
+```
+
+If you have downloaded `VCPKG` to your home folder, you do not have to modify these commands. In case your `VCPKG` is located elsewhere, make sure to change path in `CMAKE_TOOLCHAIN_FILE` appropriately.
+
+Cmake will now through `VCPKG` find, download and compile all necessary dependencies. Because libraries are compiled from source, it may take some time. Please be patient. 
+
+If you decide to redownload project or change its location, do not worry. `VCPKG` caches compiled binaries, so next time, installation of dependecies will be a lot faster.
+
+### Compiling project
+After initialization, run 
+
+```
+make
+```
+
+inside your build folder (`peer\_in\_cpp\\build`).
+
+The project also manages to generate code from *proto* files create corresponding header and source files, so you do not to worry about it. 
+
+After compilation is complete, two executables shall appear inside `build` folder:
+
+`demo_client` and `demo_server`
+
