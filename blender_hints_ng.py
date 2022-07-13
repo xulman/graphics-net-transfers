@@ -49,3 +49,11 @@ pm.vertices[-1].co.xyz...
 
 bpy.ops.object.empty_add(type='CUBE')
 
+
+
+bpy.ops.geometry.attribute_add(name="radius")
+
+m = bpy.data.objects['sfds'].data # mesh itself
+m.attributes['radius'].data[0basedPointIndex].value = 2
+
+

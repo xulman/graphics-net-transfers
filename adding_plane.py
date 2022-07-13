@@ -92,12 +92,17 @@ def add_shape_into_that_bucket(shape_ref_obj_ref, bucket_col_ref):
     bpy.ops.mesh.delete()
     bpy.ops.object.editmode_toggle()
 
+    # add attributes to the mesh points
+    mesh.attributes.new("radius",'FLOAT','POINT')
+
     # setup Geometry Nodes
     gn = shape_node.modifiers.new("Instancing from "+shape_ref_obj_ref.name,"NODES")
     gn.node_group = bpy.data.objects['NurbsPath.001'].modifiers['GeometryNodes'].node_group
     gn['Input_2'] = display_time
     gn['Input_6'] = ref_point_for_bucket  # ref_position input
     gn['Input_7'] = shape_ref_obj_ref     # ref_geometry input
+    gn['Input_8_attribute_name'] = "radius"
+    gn['Input_8_use_attribute'] = 1
 
     return shape_node
 
