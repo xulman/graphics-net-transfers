@@ -98,6 +98,8 @@ def add_shape_into_that_bucket(shape_ref_obj_ref, bucket_col_ref):
     gn_name = "Instancing from "+shape_ref_obj_ref.name
     shape_node.modifiers["GeometryNodes"].name = gn_name
     shape_node.modifiers[gn_name]['Input_2'] = display_time
+    shape_node.modifiers[gn_name]['Input_6'] = ref_point_for_bucket  # ref_position input
+    shape_node.modifiers[gn_name]['Input_7'] = shape_ref_obj_ref     # ref_geometry input
 
     return shape_node
 
