@@ -93,13 +93,11 @@ def add_shape_into_that_bucket(shape_ref_obj_ref, bucket_col_ref):
     bpy.ops.object.editmode_toggle()
 
     # setup Geometry Nodes
-    bpy.ops.object.modifier_add(type='NODES')
-    shape_node.modifiers["GeometryNodes"].node_group = bpy.data.objects['NurbsPath.001'].modifiers['GeometryNodes'].node_group
-    gn_name = "Instancing from "+shape_ref_obj_ref.name
-    shape_node.modifiers["GeometryNodes"].name = gn_name
-    shape_node.modifiers[gn_name]['Input_2'] = display_time
-    shape_node.modifiers[gn_name]['Input_6'] = ref_point_for_bucket  # ref_position input
-    shape_node.modifiers[gn_name]['Input_7'] = shape_ref_obj_ref     # ref_geometry input
+    gn = shape_node.modifiers.new("Instancing from "+shape_ref_obj_ref.name,"NODES")
+    gn.node_group = bpy.data.objects['NurbsPath.001'].modifiers['GeometryNodes'].node_group
+    gn['Input_2'] = display_time
+    gn['Input_6'] = ref_point_for_bucket  # ref_position input
+    gn['Input_7'] = shape_ref_obj_ref     # ref_geometry input
 
     return shape_node
 
