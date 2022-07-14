@@ -1,6 +1,6 @@
 import bpy
 
-hide_debug_objects = False
+hide_aux_objects = False
 
 
 def move_obj_into_this_collection(obj, destination_col):
@@ -32,9 +32,9 @@ def create_new_collection_for_source(source_name:str, source_URL:str):
     ref_obj = bpy.context.object
     #
     move_obj_into_this_collection(ref_obj, new_src_col)
-    ref_obj.name = "Source reference point for "+source_name
+    ref_obj.name = "Source reference position for "+source_name
     ref_obj["source_URL"] = source_URL
-    ref_obj.hide_viewport = hide_debug_objects
+    ref_obj.hide_viewport = hide_aux_objects
 
     return new_src_col
 
@@ -55,10 +55,10 @@ def create_new_bucket(bucket_name:str, display_time:int, source_col_ref):
     ref_obj = bpy.context.object
     #
     move_obj_into_this_collection(ref_obj, new_col)
-    ref_obj.name = "Bucket reference point for "+bucket_name
+    ref_obj.name = "Bucket reference position for "+bucket_name
     ref_obj.parent = source_col_ref.objects[0]
     ref_obj["display_time"] = display_time
-    ref_obj.hide_viewport = hide_debug_objects
+    ref_obj.hide_viewport = hide_aux_objects
 
     return new_col
 
