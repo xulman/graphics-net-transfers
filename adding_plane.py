@@ -1,6 +1,7 @@
 import bpy
 
 hide_aux_objects = False
+default_color_palette_node_name = "Default color palette"
 
 
 def move_obj_into_this_collection(obj, destination_col):
@@ -19,6 +20,39 @@ def get_mainScene_collection():
     return bpy.data.scenes[0].collection
 
 
+def create_color_palette_node(name:str, namergb_quartets):
+    # a small, 4-point grid
+    bpy.ops.mesh.primitive_grid_add(x_subdivisions=1, y_subdivisions=1)
+    ref_obj = bpy.context.object
+    ref_obj.name = name
+    ref_obj.hide_viewport = hide_aux_objects
+    # remove the original content, leave only one vertex
+    # (which is not enough to create a face and thus nothing can ever be really displayed)
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.mesh.delete()
+    bpy.ops.object.editmode_toggle()
+    ref_obj.data.vertices.add(1)
+
+    color_idx = 0
+    pass_idx = 0
+    while color_idx+3 < len(namergb_quartets):
+        n,r,g,b = namergb_quartets[color_idx:color_idx+4]
+        mat = bpy.data.materials.new(n)
+        mat.diffuse_color = [r,g,b,1]
+        mat.roughness = 10
+        mat.pass_index = pass_idx
+
+        bpy.ops.object.material_slot_add()
+        ref_obj.active_material_index = pass_idx
+        ref_obj.active_material = mat
+
+        color_idx += 4
+        pass_idx += 1
+
+    ref_obj.active_material_index = 0
+    return ref_obj
+
+
 def create_new_collection_for_source(source_name:str, source_URL:str):
     # create a new collection
     new_src_col = bpy.data.collections.new(source_name)
@@ -35,6 +69,14 @@ def create_new_collection_for_source(source_name:str, source_URL:str):
     ref_obj.name = "Source reference position for "+source_name
     ref_obj["source_URL"] = source_URL
     ref_obj.hide_viewport = hide_aux_objects
+
+    # introduce its color palettes collection, and a default color palette
+    new_colors_col = bpy.data.collections.new("Color palettes for "+source_name)
+    new_src_col.children.link(new_colors_col)
+
+    # a small, 4-point grid
+    color_node = create_color_palette_node(default_color_palette_node_name, ["red",1,0,0, "green",0,1,0, "blue",0,0,1])
+    move_obj_into_this_collection(color_node, new_colors_col)
 
     return new_src_col
 
@@ -118,10 +160,11 @@ srcLevelCol = create_new_collection_for_source("Mastodon 11","localhost:223344")
 print(srcLevelCol.name)
 
 refSphere = bpy.data.objects["refSphere"]
+basicColor = srcLevelCol.objects.get(default_color_palette_node_name)
 
 bucketLevelCol = create_new_bucket("tp=4", 4, srcLevelCol)
-shapeRef = add_shape_into_that_bucket(refSphere, bucketLevelCol)
+shapeRef = add_shape_into_that_bucket("spheres", refSphere, basicColor, bucketLevelCol)
 
 bucketLevelCol = create_new_bucket("tp=5", 5, srcLevelCol)
-shapeRef = add_shape_into_that_bucket(refSphere, bucketLevelCol)
+shapeRef = add_shape_into_that_bucket("another spheres", refSphere, basicColor, bucketLevelCol)
 
