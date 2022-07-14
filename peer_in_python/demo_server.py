@@ -62,26 +62,30 @@ class IncomingPLProcessor(points_and_lines_pb2_grpc.PointsAndLinesServicer):
         print("Got tick message: "+request.message)
         return points_and_lines_pb2.Empty()
 
-try:
-    # running the server
-    serv = server( futures.ThreadPoolExecutor(2,serverName) )
-    points_and_lines_pb2_grpc.add_PointsAndLinesServicer_to_server(IncomingPLProcessor(),serv)
-    serv.add_insecure_port('[::]:%d'%serverPort)
+def main() -> None:
+    try:
+        # running the server
+        serv = server( futures.ThreadPoolExecutor(2,serverName) )
+        points_and_lines_pb2_grpc.add_PointsAndLinesServicer_to_server(IncomingPLProcessor(),serv)
+        serv.add_insecure_port('[::]:%d'%serverPort)
 
-    serv.start()
-    print("Server ready, and listening for next 120 secs")
-    sleep(120)
-    serv.stop(5)
+        serv.start()
+        print("Server ready, and listening for next 120 secs")
+        sleep(120)
+        serv.stop(5)
 
-except RpcError as e:
-    print("Some connection error, details follow:")
-    print("==============")
-    print(e)
-    print("==============")
-except Exception as e:
-    print("Some general error, details follow:")
-    print("==============")
-    print(e)
-    print("==============")
+    except RpcError as e:
+        print("Some connection error, details follow:")
+        print("==============")
+        print(e)
+        print("==============")
+    except Exception as e:
+        print("Some general error, details follow:")
+        print("==============")
+        print(e)
+        print("==============")
 
-print("done.")
+    print("done.")
+
+if __name__ == '__main__':
+    main()
