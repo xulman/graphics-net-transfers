@@ -67,11 +67,11 @@ def get_bucket_in_this_source_collection(bucket_name:str, source_col_ref):
     return get_colName_from_that_collectionRef(bucket_name, source_col_ref)
 
 
-def add_shape_into_that_bucket(shape_ref_obj_ref, bucket_col_ref):
+def add_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
     ref_point_for_bucket = bucket_col_ref.objects[0]
     display_time = ref_point_for_bucket["display_time"]
 
-    node_name = shape_ref_obj_ref.name+" at "+str(display_time)
+    #node_name = shape_ref_obj_ref.name+" at "+str(display_time)
 
     shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
     if shape_node is not None:
