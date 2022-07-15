@@ -1,0 +1,61 @@
+starting new server
+  - create_new_collection_for_source("server nickname", client_URL)
+  - probably some short-cut maps like, e.g., "palette name" -> Blender node obj
+
+
+messaging, use-cases:
+
+init:
+
+C: - sends hello-no-feedback-please message where it states its client_nickname
+S: - wants now to create a "(display) server level collection (SLC)" for this client
+   - pretends client_URL is "no_feedback"
+   - finds SLC that matches in client_nickname and client_URL
+     - not found -> create a new one
+   - does not reply anything
+
+C: - sends hello message where it states its client_nickname and client_URL
+S: - wants now to create a "(display) server level collection (SLC)" for this client
+   - finds SLC that matches in client_nickname and client_URL
+     - not found -> create a new one
+   - replies with "ready" (to test the backward connection)
+
+(maybe also hello-no-reply-please message where it states its client_nickname and client_URL??)
+
+
+
+before every batch of data:
+
+C: - should send own colour palette
+     - the palette is a list of [name,r,g,b]
+       (the name can reflect a function that is represented with that color)
+     - list is understood as 0-based indexed array
+     - referring to a color is to tell its array index
+   - sends client_nickname, palette_name, [...definitions... ]
+S: - finds SLC matching the client_nickname, or creates "no_feedback" one
+   - finds color node of this palette_name
+     - found -> replace its colors (must never delete!!)
+     - not found -> create a new one with the given colors
+
+
+C: - starts by declaring a bucket to be writing into the upcoming graphics
+     without a palette_name in which case the specification follows as
+     if sending with palette_name = "Default color palette"
+     (NB: the "Default color palette" is always present at the server)
+|
+C: - starts by declaring a bucket to be writing into the upcoming graphics
+     and a palette_name to be used for it
+   - sends client_nickname, bucket_name and display_time
+   - bucket_name should be rather short!
+S: - finds SLC matching the client_nickname, or creates "no_feedback" one
+   - wants now to create "active" bucket
+   - finds bucket that matches in bucket_name and display_time
+     - not found -> create a new one
+   - finds color node that matches in palette_name
+     - not found -> consider the node with "Default color palette"
+   - "activates" this bucket_name and this palette_name
+
+
+- all subsequent display requests from this client
+  will appear in its "active" bucket using the "active" palette
+

@@ -40,7 +40,7 @@ def create_color_palette_node(name:str, namergb_quartets):
         mat = bpy.data.materials.new(n)
         mat.diffuse_color = [r,g,b,1]
         mat.roughness = 10
-        mat.pass_index = pass_idx
+        #mat.pass_index = pass_idx - GN's Set material index does not care about pass_index
 
         bpy.ops.object.material_slot_add()
         ref_obj.active_material_index = pass_idx
@@ -74,7 +74,7 @@ def create_new_collection_for_source(source_name:str, source_URL:str):
     new_colors_col = bpy.data.collections.new("Color palettes for "+source_name)
     new_src_col.children.link(new_colors_col)
 
-    # a small, 4-point grid
+    # a small, invisible grid to hold colors
     color_node = create_color_palette_node(default_color_palette_node_name, ["red",1,0,0, "green",0,1,0, "blue",0,0,1])
     move_obj_into_this_collection(color_node, new_colors_col)
 
@@ -83,6 +83,11 @@ def create_new_collection_for_source(source_name:str, source_URL:str):
 
 def get_collection_for_source(source_name:str):
     return get_colName_from_that_collectionRef(source_name, get_mainScene_collection())
+
+def get_default_color_palette_for_source(source_name:str):
+    col = get_collection_for_source(source_name)
+    #return col.children[0].objects[0]
+    return col.children["Color palettes for "+source_name].objects.get(default_color_palette_node_name)
 
 
 def create_new_bucket(bucket_name:str, display_time:int, source_col_ref):
