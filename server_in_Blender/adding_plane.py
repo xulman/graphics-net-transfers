@@ -114,16 +114,7 @@ def get_bucket_in_this_source_collection(bucket_name:str, source_col_ref):
     return get_colName_from_that_collectionRef(bucket_name, source_col_ref)
 
 
-def add_sphere_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
-    ref_point_for_bucket = bucket_col_ref.objects[0]
-    display_time = ref_point_for_bucket["display_time"]
-
-    #node_name = shape_ref_obj_ref.name+" at "+str(display_time)
-
-    shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
-    if shape_node is not None:
-        return shape_node
-
+def setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref):
     # creates new plane which unf. comes with some default shape/content
     # this is the Table from the Manifesto
     bpy.ops.mesh.primitive_plane_add()
@@ -139,13 +130,33 @@ def add_sphere_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_pa
     bpy.ops.mesh.delete()
     bpy.ops.object.editmode_toggle()
 
+    return shape_node
+
+def setup_geom_attribs_in_this_pointcloud(shape_node_ref, withPosAttribs:bool):
     # add attributes to the mesh points
+    mesh = shape_node_ref.data
     mesh.attributes.new("radius",'FLOAT','POINT')
     mesh.attributes.new("material_idx",'INT','POINT')
 
+    if withPosAttribs:
+        mesh.attributes.new("start_pos",'FLOAT_VECTOR','POINT')
+        mesh.attributes.new("end_pos",'FLOAT_VECTOR','POINT')
+
+
+def add_sphere_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
+    shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
+    if shape_node is not None:
+        return shape_node
+
+    shape_node = setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref)
+    setup_geom_attribs_in_this_pointcloud(shape_node, False);
+
+    ref_point_for_bucket = bucket_col_ref.objects[0]
+    display_time = ref_point_for_bucket["display_time"]
+
     # setup Geometry Nodes
     gn = shape_node.modifiers.new("Instancing from "+shape_ref_obj_ref.name,"NODES")
-    gn.node_group = bpy.data.objects['NurbsPath.001'].modifiers['GeometryNodes'].node_group
+    gn.node_group = bpy.data.objects['gnHolder_Sphere'].modifiers['GeometryNodes'].node_group
     gn['Input_2'] = display_time
     gn['Input_6'] = ref_point_for_bucket   # ref_position input
     gn['Input_7'] = shape_ref_obj_ref      # ref_geometry input
@@ -154,6 +165,67 @@ def add_sphere_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_pa
     gn['Input_9_attribute_name'] = "material_idx"
     gn['Input_9_use_attribute'] = 1
     gn['Input_10'] = color_palette_obj_ref # material_palette_node input
+
+    return shape_node
+
+
+def add_line_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
+    shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
+    if shape_node is not None:
+        return shape_node
+
+    shape_node = setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref)
+    setup_geom_attribs_in_this_pointcloud(shape_node, True);
+
+    ref_point_for_bucket = bucket_col_ref.objects[0]
+    display_time = ref_point_for_bucket["display_time"]
+
+    # setup Geometry Nodes
+    gn = shape_node.modifiers.new("Instancing from "+shape_ref_obj_ref.name,"NODES")
+    gn.node_group = bpy.data.objects['gnHolder_Line'].modifiers['GeometryNodes'].node_group
+    gn['Input_2'] = display_time
+    gn['Input_6'] = ref_point_for_bucket   # ref_position input
+    gn['Input_7'] = shape_ref_obj_ref      # ref_geometry input
+    gn['Input_8_attribute_name'] = "radius"
+    gn['Input_8_use_attribute'] = 1
+    gn['Input_9_attribute_name'] = "material_idx"
+    gn['Input_9_use_attribute'] = 1
+    gn['Input_10'] = color_palette_obj_ref # material_palette_node input
+    gn['Input_11_attribute_name'] = "end_pos"
+    gn['Input_11_use_attribute'] = 1
+    gn['Input_12_attribute_name'] = "start_pos"
+    gn['Input_12_use_attribute'] = 1
+
+    return shape_node
+
+
+def add_vector_shape_into_that_bucket(node_name:str, shape_ref_obj_ref,shapeHead_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
+    shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
+    if shape_node is not None:
+        return shape_node
+
+    shape_node = setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref)
+    setup_geom_attribs_in_this_pointcloud(shape_node, True);
+
+    ref_point_for_bucket = bucket_col_ref.objects[0]
+    display_time = ref_point_for_bucket["display_time"]
+
+    # setup Geometry Nodes
+    gn = shape_node.modifiers.new("Instancing from "+shape_ref_obj_ref.name,"NODES")
+    gn.node_group = bpy.data.objects['gnHolder_Line'].modifiers['GeometryNodes'].node_group
+    gn['Input_2'] = display_time
+    gn['Input_6'] = ref_point_for_bucket   # ref_position input
+    gn['Input_7'] = shape_ref_obj_ref      # ref_geometry input
+    gn['Input_13'] = shapeHead_ref_obj_ref # ref_geometry input
+    gn['Input_8_attribute_name'] = "radius"
+    gn['Input_8_use_attribute'] = 1
+    gn['Input_9_attribute_name'] = "material_idx"
+    gn['Input_9_use_attribute'] = 1
+    gn['Input_10'] = color_palette_obj_ref # material_palette_node input
+    gn['Input_11_attribute_name'] = "end_pos"
+    gn['Input_11_use_attribute'] = 1
+    gn['Input_12_attribute_name'] = "start_pos"
+    gn['Input_12_use_attribute'] = 1
 
     return shape_node
 
