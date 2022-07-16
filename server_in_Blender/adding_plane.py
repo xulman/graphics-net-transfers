@@ -114,7 +114,7 @@ def get_bucket_in_this_source_collection(bucket_name:str, source_col_ref):
     return get_colName_from_that_collectionRef(bucket_name, source_col_ref)
 
 
-def add_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
+def add_sphere_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
     ref_point_for_bucket = bucket_col_ref.objects[0]
     display_time = ref_point_for_bucket["display_time"]
 
@@ -165,11 +165,11 @@ srcLevelCol = create_new_collection_for_source("Mastodon 11","localhost:223344")
 print(srcLevelCol.name)
 
 refSphere = bpy.data.objects["refSphere"]
-basicColor = srcLevelCol.objects.get(default_color_palette_node_name)
+basicColorPalette = srcLevelCol.objects.get(default_color_palette_node_name)
 
 bucketLevelCol = create_new_bucket("tp=4", 4, srcLevelCol)
-shapeRef = add_shape_into_that_bucket("spheres", refSphere, basicColor, bucketLevelCol)
+shapeRef = add_sphere_shape_into_that_bucket("spheres", refSphere, basicColorPalette, bucketLevelCol)
 
 bucketLevelCol = create_new_bucket("tp=5", 5, srcLevelCol)
-shapeRef = add_shape_into_that_bucket("another spheres", refSphere, basicColor, bucketLevelCol)
+shapeRef = add_sphere_shape_into_that_bucket("another spheres", refSphere, basicColorPalette, bucketLevelCol)
 
