@@ -1,6 +1,8 @@
 import demo_ng.buckets_with_graphics_pb2 as Gbuckets_with_graphics_pb2
 import demo_ng.buckets_with_graphics_pb2_grpc as Gbuckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
+from threading import Lock
+from time import sleep
 import bpy
 
 
@@ -16,7 +18,44 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         # TODO return default noname collection if srcLevel is None
         return srcLevel
 
+    def __init__(self):
+        # to make sure that talking to Blender is serialized
+        # -> only one is modifying Blender at a time
+        self.request_lock = Lock()
+        self.request_data = None
+
+        # to signal Blender's callback is active
+        self.request_callback_is_running = False
+
+    def submit_work_for_Blender_and_wait(self, code, data, reports_name: str):
+        print(f"{reports_name} wants to talk to Blender...")
+        self.request_lock.acquire()
+        print(f"{reports_name} is now talking to Blender...")
+
+        # prepare data and ask Blender to execute our code
+        self.request_data = data
+        self.request_callback_is_running = True
+        bpy.app.timers.register(code, first_interval=0.01)
+
+        # wait for our code to finish
+        # NB: flag is cleared in the signalling method done_working_with_Blender()
+        while self.request_callback_is_running:
+            sleep(0.2)
+
+        print(f"{reports_name} just finished talking to Blender...")
+        self.request_lock.release()
+
+    def done_working_with_Blender(self):
+        self.request_callback_is_running = False
+
+
     def introduceClient(self, request: Gbuckets_with_graphics_pb2.ClientHello, context):
+        self.submit_work_for_Blender_and_wait(self.introduceClient_worker, request, "introduceClient()")
+        return Gbuckets_with_graphics_pb2.Empty()
+
+    def introduceClient_worker(self):
+        request: Gbuckets_with_graphics_pb2.ClientHello = self.request_data
+
         print(f"Server registers {self.report_client(request.clientID)}")
         retURL = request.returnURL
         if retURL is None or retURL == "":
@@ -29,9 +68,17 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         srcLevel = BU.get_collection_for_source(clientName)
         if srcLevel is None:
             srcLevel = BU.create_new_collection_for_source(clientName,retURL)
-        return Gbuckets_with_graphics_pb2.Empty()
+
+        self.done_working_with_Blender()
+
 
     def addSpheres(self, request_iterator: Gbuckets_with_graphics_pb2.BucketOfSpheres, context):
+        self.submit_work_for_Blender_and_wait(self.addSpheres_worker, request_iterator, "addSpheres()")
+        return Gbuckets_with_graphics_pb2.Empty()
+
+    def addSpheres_worker(self):
+        request_iterator: Gbuckets_with_graphics_pb2.BucketOfSpheres = self.request_data
+
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
             refSphere = bpy.data.objects["refSphere"]
@@ -57,9 +104,17 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
                 data.vertices[i].co.z = sphere.centre.z
                 data.attributes['radius'].data[i].value = sphere.radius
                 data.attributes['material_idx'].data[i].value = sphere.colorIdx
-        return Gbuckets_with_graphics_pb2.Empty()
+
+        self.done_working_with_Blender()
+
 
     def addLines(self, request_iterator: Gbuckets_with_graphics_pb2.BucketOfLines, context):
+        self.submit_work_for_Blender_and_wait(self.addLines_worker, request_iterator, "addLines()")
+        return Gbuckets_with_graphics_pb2.Empty()
+
+    def addLines_worker(self):
+        request_iterator = self.request_data
+
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
             refLine = bpy.data.objects["refLine"]
@@ -87,9 +142,17 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
                 data.attributes['end_pos'].data[i].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
                 data.attributes['radius'].data[i].value = line.radius
                 data.attributes['material_idx'].data[i].value = line.colorIdx
-        return Gbuckets_with_graphics_pb2.Empty()
+
+        self.done_working_with_Blender()
+
 
     def addVectors(self, request_iterator: Gbuckets_with_graphics_pb2.BucketOfVectors, context):
+        self.submit_work_for_Blender_and_wait(self.addVectors_worker, request_iterator, "addVectors()")
+        return Gbuckets_with_graphics_pb2.Empty()
+
+    def addVectors_worker(self):
+        request_iterator = self.request_data
+
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
             refVector = bpy.data.objects["refVector"]
@@ -118,7 +181,9 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
                 data.attributes['end_pos'].data[i].vector = [vec.endPos.x,vec.endPos.y,vec.endPos.z]
                 data.attributes['radius'].data[i].value = vec.radius
                 data.attributes['material_idx'].data[i].value = vec.colorIdx
-        return Gbuckets_with_graphics_pb2.Empty()
+
+        self.done_working_with_Blender()
+
 
     def showMessage(self, request: Gbuckets_with_graphics_pb2.SignedTextMessage, context):
         print(f"Message from {self.report_client(request.clientID)}: {request.clientMessage.msg}")
