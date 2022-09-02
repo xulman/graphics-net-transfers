@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package transfers_graphics_protocol;
+option java_package = "cz.it4i.ulman.transfers.graphics.protocol";
+
+
+service ClientToServer {
+	/**
+	 * client should start communication with this message,
+	 * in this message the client may (not "must") additionally register
+	 * a call back URL at which the server will be sending notifications
+	 *
+	 * if this message is omited, unmatched incoming requests will
+	 * be placed into "unknown_source" collection
+	 */
+	rpc introduceClient(ClientHello) returns (Empty) {}
+
+	/**
+	 * one bucket of one-type-of-graphics is requested to be displayed,
+	 * this request shall contain a burst/batch of instances that all
+	 * shall appear in this created bucket
+	 *
+	 * since the display need not be able to distinguish among instances
+	 * within a bucket, only an ID of the bucket is transfered and no IDs
+	 * for the individual instances
+	 */
+	rpc addSpheres (stream BucketOfSpheres) returns (Empty) {}
+	rpc addLines   (stream BucketOfLines  ) returns (Empty) {}
+	rpc addVectors (stream BucketOfVectors) returns (Empty) {}
+
+	rpc showMessage (SignedTextMessage) returns (Empty) {}
+	rpc focusEvent  (SignedClickedIDs) returns (Empty) {}
+	rpc selectEvent (SignedClickedIDs) returns (Empty) {}
+}
+
+
+service ServerToClient {
+	rpc showMessage (TextMessage) returns (Empty) {}
+	rpc focusEvent  (ClickedIDs) returns (Empty) {}
+	rpc selectEvent (ClickedIDs) returns (Empty) {}
+}
+
+
+message Empty {
+}
+
+message ClientIdentification {
+	string clientName = 1;
+}
+
+message ClientHello {
+	// name of source
+	ClientIdentification clientID = 1;
+
+	// URL for server-to-source communication, can be empty string too
+	string returnURL = 2;
+}
+
+
+message BucketOfSpheres {
+	ClientIdentification clientID = 1;
+	uint64 bucketID = 2;		// ID in the realm of the source to which the full content of this bucket is associated
+	string label = 3;			// Label printed with this bucket
+	uint64 time = 4;			// Time at which this bucket is visible
+	repeated SphereParameters spheres = 5;
+}
+
+message BucketOfLines {
+	ClientIdentification clientID = 1;
+	uint64 bucketID = 2;		// ID in the realm of the source to which the full content of this bucket is associated
+	string label = 3;			// Label printed with this bucket
+	uint64 time = 4;			// Time at which this bucket is visible
+	repeated LineParameters lines = 5;
+}
+
+message BucketOfVectors {
+	ClientIdentification clientID = 1;
+	uint64 bucketID = 2;		// ID in the realm of the source to which the full content of this bucket is associated
+	string label = 3;			// Label printed with this bucket
+	uint64 time = 4;			// Time at which this bucket is visible
+	repeated VectorParameters vectors = 5;
+}
+
+
+message Vector3D {
+	float x = 1;
+	float y = 2;
+	float z = 3;
+}
+
+message SphereParameters {
+	Vector3D centre = 1;
+	float radius    = 3;
+	uint32 colorIdx = 4;
+}
+
+message LineParameters {
+	Vector3D startPos = 1;
+	Vector3D endPos = 2;
+	float radius    = 3;
+	uint32 colorIdx = 4;
+}
+
+message VectorParameters {
+	Vector3D startPos = 1;
+	Vector3D endPos = 2;
+	float radius    = 3;
+	uint32 colorIdx = 4;
+}
+
+
+message TextMessage {
+	string msg = 1;  // any message which the server is asked to possibly display
+}
+
+message SignedTextMessage {
+	ClientIdentification clientID = 1;
+	TextMessage clientMessage = 2;
+}
+
+
+message ClickedIDs {
+	repeated uint64 objIDs = 1;
+}
+
+message SignedClickedIDs {
+	ClientIdentification clientID = 1;
+	ClickedIDs clientClickedIDs = 2;
+}

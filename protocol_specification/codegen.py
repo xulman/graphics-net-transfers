@@ -20,5 +20,5 @@ protoc.main((
     '-Iprotocol_specification',
     '--python_out=peer_in_python/',
     '--grpc_python_out=peer_in_python/',
-    'points_and_lines.proto',
+    'buckets_with_graphics.proto',
 ))
