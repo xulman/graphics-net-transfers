@@ -32,21 +32,20 @@ def create_color_palette_node(name:str, namergb_quartets):
     bpy.ops.object.editmode_toggle()
     ref_obj.data.vertices.add(1)
 
+    src_idx = 0
     color_idx = 0
-    pass_idx = 0
-    while color_idx+3 < len(namergb_quartets):
-        n,r,g,b = namergb_quartets[color_idx:color_idx+4]
+    while src_idx+3 < len(namergb_quartets):
+        n,r,g,b = namergb_quartets[src_idx:src_idx+4]
         mat = bpy.data.materials.new(n)
         mat.diffuse_color = [r,g,b,1]
         mat.roughness = 10
-        #mat.pass_index = pass_idx - GN's Set material index does not care about pass_index
 
         bpy.ops.object.material_slot_add()
-        ref_obj.active_material_index = pass_idx
+        ref_obj.active_material_index = color_idx
         ref_obj.active_material = mat
 
-        color_idx += 4
-        pass_idx += 1
+        src_idx += 4
+        color_idx += 1
 
     ref_obj.active_material_index = 0
     ref_obj.hide_viewport = hide_aux_objects
