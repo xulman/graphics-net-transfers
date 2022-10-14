@@ -7,11 +7,6 @@ import bpy
 
 
 class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerServicer):
-    def report_client(self, client: Gbuckets_with_graphics_pb2.ClientIdentification):
-        return "client '"+client.clientName+"'"
-    def report_vector(self, vec: Gbuckets_with_graphics_pb2.Vector3D):
-        return f"[{vec.x},{vec.y},{vec.z}]"
-
 
     def __init__(self):
         # to make sure that talking to Blender is serialized
@@ -201,3 +196,9 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
     def selectEvent(self, request: Gbuckets_with_graphics_pb2.SignedClickedIDs, context):
         print(f"Client '{self.report_client(request.clientID)}' requests server to select IDs: {request.clientClickedIDs.objIDs}")
         return Gbuckets_with_graphics_pb2.Empty()
+
+
+    def report_client(self, client: Gbuckets_with_graphics_pb2.ClientIdentification):
+        return "client '"+client.clientName+"'"
+    def report_vector(self, vec: Gbuckets_with_graphics_pb2.Vector3D):
+        return f"[{vec.x},{vec.y},{vec.z}]"
