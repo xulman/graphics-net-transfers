@@ -24,10 +24,16 @@ def main() -> None:
         clientGreeting.clientID.clientName = clientName
         comm.introduceClient(clientGreeting)
 
+        print("waiting for Enter key")
+        input()
+
         msg = buckets_with_graphics_pb2.SignedTextMessage()
         msg.clientID.clientName = clientName
         msg.clientMessage.msg = f"I'm sending you {noOfSpheres} spheres"
         comm.showMessage(msg)
+
+        print("waiting for Enter key")
+        input()
 
         buckets = list()
         #
@@ -62,6 +68,9 @@ def main() -> None:
         buckets.append(bucket)
         #
         comm.addSpheres(iter(buckets))
+
+        print("waiting for Enter key")
+        input()
 
         buckets = list()
         bucket = buckets_with_graphics_pb2.BucketOfVectors()
