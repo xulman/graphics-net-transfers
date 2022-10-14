@@ -1,7 +1,7 @@
 from grpc import insecure_channel, RpcError
 from copy import copy
 import buckets_with_graphics_pb2
-import buckets_with_graphics_pb2_grpc
+import buckets_with_graphics_pb2_grpc_orig as buckets_with_graphics_pb2_grpc
 
 
 def main() -> None:
