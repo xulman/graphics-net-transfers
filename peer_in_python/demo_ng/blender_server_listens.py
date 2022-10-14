@@ -12,11 +12,6 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
     def report_vector(self, vec: Gbuckets_with_graphics_pb2.Vector3D):
         return f"[{vec.x},{vec.y},{vec.z}]"
 
-    def get_client_collection(self, client: Gbuckets_with_graphics_pb2.ClientIdentification):
-        clientName = client.clientName
-        srcLevel = BU.get_collection_for_source(clientName)
-        # TODO return default noname collection if srcLevel is None
-        return srcLevel
 
     def __init__(self):
         # to make sure that talking to Blender is serialized
@@ -70,6 +65,16 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             srcLevel = BU.create_new_collection_for_source(clientName,retURL)
 
         self.done_working_with_Blender()
+
+
+    def get_client_collection(self, client: Gbuckets_with_graphics_pb2.ClientIdentification):
+        clientName = client.clientName
+        srcLevel = BU.get_collection_for_source(clientName)
+        if srcLevel is None:
+            srcLevel = BU.get_collection_for_source("anonymous")
+            if srcLevel is None:
+                srcLevel = BU.create_new_collection_for_source("anonymous", "no callback")
+        return srcLevel
 
 
     def addSpheres(self, request_iterator: Gbuckets_with_graphics_pb2.BucketOfSpheres, context):
