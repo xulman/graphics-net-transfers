@@ -28,6 +28,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         # default and immutable state of some reference objects
         self.hide_reference_position_objects = False
         self.hide_color_palette_obj = True
+        self.report_individual_incoming_items = False
 
         # some more reference objects
         self.color_palette_obj = None # makes the class to find (or create) it later
@@ -107,8 +108,9 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             srcLevelCol = self.get_client_collection(request.clientID)
             refSphere = bpy.data.objects["refSphere"]
 
-            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server:")
-            print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for time {request.time}")
+            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
+            print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for "
+                f"time {request.time} with {len(request.spheres)} items.")
 
             bucketName = f"TP={request.time}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
@@ -121,7 +123,8 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             data = shapeRef.data
             data.vertices.add(len(request.spheres))
             for i,sphere in enumerate(request.spheres):
-                print(f"Sphere at {self.report_vector(sphere.centre)}, radius={sphere.radius}, color={BU.integer_to_color(sphere.colorXRGB)}")
+                if self.report_individual_incoming_items:
+                    print(f"Sphere at {self.report_vector(sphere.centre)}, radius={sphere.radius}, color={BU.integer_to_color(sphere.colorXRGB)}")
                 data.vertices[i].co.x = sphere.centre.x
                 data.vertices[i].co.y = sphere.centre.y
                 data.vertices[i].co.z = sphere.centre.z
@@ -143,8 +146,9 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             srcLevelCol = self.get_client_collection(request.clientID)
             refLine = bpy.data.objects["refLine"]
 
-            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server:")
-            print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for time {request.time}")
+            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
+            print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for "
+                f"time {request.time} with {len(request.lines)} items.")
 
             bucketName = f"TP={request.time}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
@@ -157,7 +161,8 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             data = shapeRef.data
             data.vertices.add(len(request.lines))
             for i,line in enumerate(request.lines):
-                print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}, radius={line.radius}, color={BU.integer_to_color(line.colorXRGB)}")
+                if self.report_individual_incoming_items:
+                    print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}, radius={line.radius}, color={BU.integer_to_color(line.colorXRGB)}")
                 data.vertices[i].co.x = line.startPos.x
                 data.vertices[i].co.y = line.startPos.y
                 data.vertices[i].co.z = line.startPos.z
@@ -182,8 +187,9 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             refVector = bpy.data.objects["refVector"]
             refVectorH = refVector.children[0]
 
-            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server:")
-            print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for time {request.time}")
+            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
+            print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for "
+                f"time {request.time} with {len(request.vectors)} items.")
 
             bucketName = f"TP={request.time}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
@@ -196,7 +202,8 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             data = shapeRef.data
             data.vertices.add(len(request.vectors))
             for i,vec in enumerate(request.vectors):
-                print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}, radius={vec.radius}, color={BU.integer_to_color(vec.colorXRGB)}")
+                if self.report_individual_incoming_items:
+                    print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}, radius={vec.radius}, color={BU.integer_to_color(vec.colorXRGB)}")
                 data.vertices[i].co.x = vec.startPos.x
                 data.vertices[i].co.y = vec.startPos.y
                 data.vertices[i].co.z = vec.startPos.z
