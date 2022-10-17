@@ -121,7 +121,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             data = shapeRef.data
             data.vertices.add(len(request.spheres))
             for i,sphere in enumerate(request.spheres):
-                print(f"Sphere at {self.report_vector(sphere.centre)}, radius={sphere.radius}, colorIdx={sphere.colorIdx}")
+                print(f"Sphere at {self.report_vector(sphere.centre)}, radius={sphere.radius}, color={BU.integer_to_color(sphere.colorXRGB)}")
                 data.vertices[i].co.x = sphere.centre.x
                 data.vertices[i].co.y = sphere.centre.y
                 data.vertices[i].co.z = sphere.centre.z
@@ -157,7 +157,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             data = shapeRef.data
             data.vertices.add(len(request.lines))
             for i,line in enumerate(request.lines):
-                print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}, radius={line.radius}, colorIdx={line.colorIdx}")
+                print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}, radius={line.radius}, color={BU.integer_to_color(line.colorXRGB)}")
                 data.vertices[i].co.x = line.startPos.x
                 data.vertices[i].co.y = line.startPos.y
                 data.vertices[i].co.z = line.startPos.z
@@ -196,7 +196,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             data = shapeRef.data
             data.vertices.add(len(request.vectors))
             for i,vec in enumerate(request.vectors):
-                print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}, radius={vec.radius}, colorIdx={vec.colorIdx}")
+                print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}, radius={vec.radius}, color={BU.integer_to_color(vec.colorXRGB)}")
                 data.vertices[i].co.x = vec.startPos.x
                 data.vertices[i].co.y = vec.startPos.y
                 data.vertices[i].co.z = vec.startPos.z
