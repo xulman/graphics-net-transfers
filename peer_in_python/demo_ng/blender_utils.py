@@ -1,8 +1,5 @@
 import bpy
 
-hide_aux_objects = True
-default_color_palette_node_name = "Default color palette"
-
 
 def move_obj_into_this_collection(obj, destination_col):
     if destination_col.objects.get(obj.name) is None:
@@ -20,7 +17,7 @@ def get_mainScene_collection():
     return bpy.data.scenes[0].collection
 
 
-def create_color_palette_node(name:str, namergb_quartets):
+def create_color_palette_node(name:str, namergb_quartets, hide_node = False):
     # a small, 4-point grid
     bpy.ops.mesh.primitive_grid_add(x_subdivisions=1, y_subdivisions=1)
     ref_obj = bpy.context.object
@@ -32,28 +29,61 @@ def create_color_palette_node(name:str, namergb_quartets):
     bpy.ops.object.editmode_toggle()
     ref_obj.data.vertices.add(1)
 
+    src_idx = 0
     color_idx = 0
-    pass_idx = 0
-    while color_idx+3 < len(namergb_quartets):
-        n,r,g,b = namergb_quartets[color_idx:color_idx+4]
+    while src_idx+3 < len(namergb_quartets):
+        n,r,g,b = namergb_quartets[src_idx:src_idx+4]
         mat = bpy.data.materials.new(n)
         mat.diffuse_color = [r,g,b,1]
         mat.roughness = 10
-        #mat.pass_index = pass_idx - GN's Set material index does not care about pass_index
 
         bpy.ops.object.material_slot_add()
-        ref_obj.active_material_index = pass_idx
+        ref_obj.active_material_index = color_idx
         ref_obj.active_material = mat
 
-        color_idx += 4
-        pass_idx += 1
+        src_idx += 4
+        color_idx += 1
 
     ref_obj.active_material_index = 0
-    ref_obj.hide_viewport = hide_aux_objects
+    ref_obj.hide_viewport = hide_node
     return ref_obj
 
+def colors_enumerate_all():
+    # creates quadruples "label",r,g,b
+    # where "label" is 0-to-255-scaled, comma-separated string, e.g. "128,192,16"
+    # and where the r,g,b are 0-to-1 scaled corresponding color elements
+    l_of_l = [ [f"{16*(i//256)},{16*((i%256)//16)},{16*(i%16)}",
+        (i//256)/16, ((i%256)//16)/16, (i%16)/16] for i in range(4096) ]
+    #
+    # the above does a list of lists -- [ [name,r,g,b],[...],...],
+    # and the below only flattens it
+    colors = [ i for sl in l_of_l for i in sl ]
+    #
+    # some special labels...
+    colors[0] = "black"
+    colors[-4] = "white"
+    return colors
 
-def create_new_collection_for_source(source_name:str, source_URL:str):
+def integer_to_color(XRGB:int):
+    r = (XRGB // 65536) % 256
+    g =  (XRGB // 256)  % 256
+    b =      XRGB       % 256
+    return r,g,b
+
+def color_to_index(r,g,b):
+    i = b // 16
+    i += 16 * (g // 16)
+    i += 256 * (r // 16)
+    return i
+
+def index_to_color(i):
+    r = 16*( i // 256 )
+    g = 16*( (i // 16) % 16 )
+    b = 16*( i % 16 )
+    return r,g,b
+
+
+def create_new_collection_for_source(source_name:str, source_URL:str, hide_position_node = False):
     # create a new collection
     new_src_col = bpy.data.collections.new(source_name)
 
@@ -68,15 +98,7 @@ def create_new_collection_for_source(source_name:str, source_URL:str):
     move_obj_into_this_collection(ref_obj, new_src_col)
     ref_obj.name = "Source reference position for "+source_name
     ref_obj["source_URL"] = source_URL
-    ref_obj.hide_viewport = hide_aux_objects
-
-    # introduce its color palettes collection, and a default color palette
-    new_colors_col = bpy.data.collections.new("Color palettes for "+source_name)
-    new_src_col.children.link(new_colors_col)
-
-    # a small, invisible grid to hold colors
-    color_node = create_color_palette_node(default_color_palette_node_name, ["red",1,0,0, "green",0,1,0, "blue",0,0,1])
-    move_obj_into_this_collection(color_node, new_colors_col)
+    ref_obj.hide_viewport = hide_position_node
 
     return new_src_col
 
@@ -84,13 +106,8 @@ def create_new_collection_for_source(source_name:str, source_URL:str):
 def get_collection_for_source(source_name:str):
     return get_colName_from_that_collectionRef(source_name, get_mainScene_collection())
 
-def get_default_color_palette_for_source(source_name:str):
-    col = get_collection_for_source(source_name)
-    #return col.children[0].objects[0]
-    return col.children["Color palettes for "+source_name].objects.get(default_color_palette_node_name)
 
-
-def create_new_bucket(bucket_name:str, display_time:int, source_col_ref):
+def create_new_bucket(bucket_name:str, display_time:int, source_col_ref, hide_position_node = False):
     # create a new collection
     new_col = bpy.data.collections.new(bucket_name)
 
@@ -105,7 +122,7 @@ def create_new_bucket(bucket_name:str, display_time:int, source_col_ref):
     ref_obj.name = "Bucket reference position for "+bucket_name
     ref_obj.parent = source_col_ref.objects[0]
     ref_obj["display_time"] = display_time
-    ref_obj.hide_viewport = hide_aux_objects
+    ref_obj.hide_viewport = hide_position_node
 
     return new_col
 
@@ -237,7 +254,7 @@ def demo():
     print(srcLevelCol.name)
 
     refSphere = bpy.data.objects["refSphere"]
-    basicColorPalette = srcLevelCol.objects.get(default_color_palette_node_name)
+    basicColorPalette = bpy.data.objects["Color palette"]
 
     bucketLevelCol = create_new_bucket("tp=4", 4, srcLevelCol)
     shapeRef = add_sphere_shape_into_that_bucket("spheres", refSphere, basicColorPalette, bucketLevelCol)

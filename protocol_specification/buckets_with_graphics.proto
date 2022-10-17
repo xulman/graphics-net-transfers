@@ -29,15 +29,23 @@ service ClientToServer {
 	rpc addVectors (stream BucketOfVectors) returns (Empty) {}
 
 	rpc showMessage (SignedTextMessage) returns (Empty) {}
-	rpc focusEvent  (SignedClickedIDs) returns (Empty) {}
-	rpc selectEvent (SignedClickedIDs) returns (Empty) {}
+
+	rpc focusEvent   (SignedClickedIDs)     returns (Empty) {}
+	rpc unfocusEvent (ClientIdentification) returns (Empty) {}
+
+	rpc selectEvent   (SignedClickedIDs) returns (Empty) {}
+	rpc unselectEvent (SignedClickedIDs) returns (Empty) {}
 }
 
 
 service ServerToClient {
 	rpc showMessage (TextMessage) returns (Empty) {}
-	rpc focusEvent  (ClickedIDs) returns (Empty) {}
-	rpc selectEvent (ClickedIDs) returns (Empty) {}
+
+	rpc focusEvent   (ClickedIDs) returns (Empty) {}
+	rpc unfocusEvent (Empty)      returns (Empty) {}
+
+	rpc selectEvent   (ClickedIDs) returns (Empty) {}
+	rpc unselectEvent (ClickedIDs) returns (Empty) {}
 }
 
 
@@ -59,25 +67,25 @@ message ClientHello {
 
 message BucketOfSpheres {
 	ClientIdentification clientID = 1;
-	uint64 bucketID = 2;		// ID in the realm of the source to which the full content of this bucket is associated
-	string label = 3;			// Label printed with this bucket
-	uint64 time = 4;			// Time at which this bucket is visible
+	uint64 bucketID = 2;    // ID in the realm of the source to which the full content of this bucket is associated
+	string label = 3;       // Label printed with this bucket
+	uint64 time = 4;        // Time at which this bucket is visible
 	repeated SphereParameters spheres = 5;
 }
 
 message BucketOfLines {
 	ClientIdentification clientID = 1;
-	uint64 bucketID = 2;		// ID in the realm of the source to which the full content of this bucket is associated
-	string label = 3;			// Label printed with this bucket
-	uint64 time = 4;			// Time at which this bucket is visible
+	uint64 bucketID = 2;    // ID in the realm of the source to which the full content of this bucket is associated
+	string label = 3;       // Label printed with this bucket
+	uint64 time = 4;        // Time at which this bucket is visible
 	repeated LineParameters lines = 5;
 }
 
 message BucketOfVectors {
 	ClientIdentification clientID = 1;
-	uint64 bucketID = 2;		// ID in the realm of the source to which the full content of this bucket is associated
-	string label = 3;			// Label printed with this bucket
-	uint64 time = 4;			// Time at which this bucket is visible
+	uint64 bucketID = 2;    // ID in the realm of the source to which the full content of this bucket is associated
+	string label = 3;       // Label printed with this bucket
+	uint64 time = 4;        // Time at which this bucket is visible
 	repeated VectorParameters vectors = 5;
 }
 
@@ -89,23 +97,23 @@ message Vector3D {
 }
 
 message SphereParameters {
-	Vector3D centre = 1;
-	float radius    = 3;
-	uint32 colorIdx = 4;
+	Vector3D centre  = 1;
+	float radius     = 3;
+	uint32 colorXRGB = 4;
 }
 
 message LineParameters {
 	Vector3D startPos = 1;
-	Vector3D endPos = 2;
-	float radius    = 3;
-	uint32 colorIdx = 4;
+	Vector3D endPos   = 2;
+	float radius      = 3;
+	uint32 colorXRGB  = 4;
 }
 
 message VectorParameters {
 	Vector3D startPos = 1;
-	Vector3D endPos = 2;
-	float radius    = 3;
-	uint32 colorIdx = 4;
+	Vector3D endPos   = 2;
+	float radius      = 3;
+	uint32 colorXRGB  = 4;
 }
 
 

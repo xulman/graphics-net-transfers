@@ -44,8 +44,18 @@ class ClientToServerStub(object):
                 request_serializer=buckets__with__graphics__pb2.SignedClickedIDs.SerializeToString,
                 response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
                 )
+        self.unfocusEvent = channel.unary_unary(
+                '/transfers_graphics_protocol.ClientToServer/unfocusEvent',
+                request_serializer=buckets__with__graphics__pb2.ClientIdentification.SerializeToString,
+                response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
+                )
         self.selectEvent = channel.unary_unary(
                 '/transfers_graphics_protocol.ClientToServer/selectEvent',
+                request_serializer=buckets__with__graphics__pb2.SignedClickedIDs.SerializeToString,
+                response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
+                )
+        self.unselectEvent = channel.unary_unary(
+                '/transfers_graphics_protocol.ClientToServer/unselectEvent',
                 request_serializer=buckets__with__graphics__pb2.SignedClickedIDs.SerializeToString,
                 response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
                 )
@@ -105,7 +115,19 @@ class ClientToServerServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def unfocusEvent(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def selectEvent(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def unselectEvent(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -144,8 +166,18 @@ def add_ClientToServerServicer_to_server(servicer, server):
                     request_deserializer=buckets__with__graphics__pb2.SignedClickedIDs.FromString,
                     response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
             ),
+            'unfocusEvent': grpc.unary_unary_rpc_method_handler(
+                    servicer.unfocusEvent,
+                    request_deserializer=buckets__with__graphics__pb2.ClientIdentification.FromString,
+                    response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
+            ),
             'selectEvent': grpc.unary_unary_rpc_method_handler(
                     servicer.selectEvent,
+                    request_deserializer=buckets__with__graphics__pb2.SignedClickedIDs.FromString,
+                    response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
+            ),
+            'unselectEvent': grpc.unary_unary_rpc_method_handler(
+                    servicer.unselectEvent,
                     request_deserializer=buckets__with__graphics__pb2.SignedClickedIDs.FromString,
                     response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
             ),
@@ -262,6 +294,23 @@ class ClientToServer(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def unfocusEvent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.ClientToServer/unfocusEvent',
+            buckets__with__graphics__pb2.ClientIdentification.SerializeToString,
+            buckets__with__graphics__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def selectEvent(request,
             target,
             options=(),
@@ -273,6 +322,23 @@ class ClientToServer(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.ClientToServer/selectEvent',
+            buckets__with__graphics__pb2.SignedClickedIDs.SerializeToString,
+            buckets__with__graphics__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def unselectEvent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.ClientToServer/unselectEvent',
             buckets__with__graphics__pb2.SignedClickedIDs.SerializeToString,
             buckets__with__graphics__pb2.Empty.FromString,
             options, channel_credentials,
@@ -298,8 +364,18 @@ class ServerToClientStub(object):
                 request_serializer=buckets__with__graphics__pb2.ClickedIDs.SerializeToString,
                 response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
                 )
+        self.unfocusEvent = channel.unary_unary(
+                '/transfers_graphics_protocol.ServerToClient/unfocusEvent',
+                request_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
+                response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
+                )
         self.selectEvent = channel.unary_unary(
                 '/transfers_graphics_protocol.ServerToClient/selectEvent',
+                request_serializer=buckets__with__graphics__pb2.ClickedIDs.SerializeToString,
+                response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
+                )
+        self.unselectEvent = channel.unary_unary(
+                '/transfers_graphics_protocol.ServerToClient/unselectEvent',
                 request_serializer=buckets__with__graphics__pb2.ClickedIDs.SerializeToString,
                 response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
                 )
@@ -320,7 +396,19 @@ class ServerToClientServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def unfocusEvent(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def selectEvent(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def unselectEvent(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -339,8 +427,18 @@ def add_ServerToClientServicer_to_server(servicer, server):
                     request_deserializer=buckets__with__graphics__pb2.ClickedIDs.FromString,
                     response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
             ),
+            'unfocusEvent': grpc.unary_unary_rpc_method_handler(
+                    servicer.unfocusEvent,
+                    request_deserializer=buckets__with__graphics__pb2.Empty.FromString,
+                    response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
+            ),
             'selectEvent': grpc.unary_unary_rpc_method_handler(
                     servicer.selectEvent,
+                    request_deserializer=buckets__with__graphics__pb2.ClickedIDs.FromString,
+                    response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
+            ),
+            'unselectEvent': grpc.unary_unary_rpc_method_handler(
+                    servicer.unselectEvent,
                     request_deserializer=buckets__with__graphics__pb2.ClickedIDs.FromString,
                     response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
             ),
@@ -389,6 +487,23 @@ class ServerToClient(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def unfocusEvent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.ServerToClient/unfocusEvent',
+            buckets__with__graphics__pb2.Empty.SerializeToString,
+            buckets__with__graphics__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def selectEvent(request,
             target,
             options=(),
@@ -400,6 +515,23 @@ class ServerToClient(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.ServerToClient/selectEvent',
+            buckets__with__graphics__pb2.ClickedIDs.SerializeToString,
+            buckets__with__graphics__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def unselectEvent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/transfers_graphics_protocol.ServerToClient/unselectEvent',
             buckets__with__graphics__pb2.ClickedIDs.SerializeToString,
             buckets__with__graphics__pb2.Empty.FromString,
             options, channel_credentials,

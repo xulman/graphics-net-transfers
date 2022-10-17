@@ -40,7 +40,7 @@ def main() -> None:
                 sphParams.centre.y = y
                 sphParams.centre.z = j
                 sphParams.radius = 0.3
-                sphParams.colorIdx = i % 3
+                sphParams.colorXRGB = 80+ 80*(i % 3)
                 bucket.spheres.append(sphParams)
             buckets.append(bucket)
         comm.addSpheres(iter(buckets))

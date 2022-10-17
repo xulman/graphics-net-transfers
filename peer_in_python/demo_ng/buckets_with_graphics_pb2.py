@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n)cz.it4i.ulman.transfers.graphics.protocol',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x1b\x62uckets_with_graphics.proto\x12\x1btransfers_graphics_protocol\"\x07\n\x05\x45mpty\"*\n\x14\x43lientIdentification\x12\x12\n\nclientName\x18\x01 \x01(\t\"e\n\x0b\x43lientHello\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x11\n\treturnURL\x18\x02 \x01(\t\"\xc5\x01\n\x0f\x42ucketOfSpheres\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x10\n\x08\x62ucketID\x18\x02 \x01(\x04\x12\r\n\x05label\x18\x03 \x01(\t\x12\x0c\n\x04time\x18\x04 \x01(\x04\x12>\n\x07spheres\x18\x05 \x03(\x0b\x32-.transfers_graphics_protocol.SphereParameters\"\xbf\x01\n\rBucketOfLines\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x10\n\x08\x62ucketID\x18\x02 \x01(\x04\x12\r\n\x05label\x18\x03 \x01(\t\x12\x0c\n\x04time\x18\x04 \x01(\x04\x12:\n\x05lines\x18\x05 \x03(\x0b\x32+.transfers_graphics_protocol.LineParameters\"\xc5\x01\n\x0f\x42ucketOfVectors\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x10\n\x08\x62ucketID\x18\x02 \x01(\x04\x12\r\n\x05label\x18\x03 \x01(\t\x12\x0c\n\x04time\x18\x04 \x01(\x04\x12>\n\x07vectors\x18\x05 \x03(\x0b\x32-.transfers_graphics_protocol.VectorParameters\"+\n\x08Vector3D\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\"k\n\x10SphereParameters\x12\x35\n\x06\x63\x65ntre\x18\x01 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x0e\n\x06radius\x18\x03 \x01(\x02\x12\x10\n\x08\x63olorIdx\x18\x04 \x01(\r\"\xa2\x01\n\x0eLineParameters\x12\x37\n\x08startPos\x18\x01 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x35\n\x06\x65ndPos\x18\x02 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x0e\n\x06radius\x18\x03 \x01(\x02\x12\x10\n\x08\x63olorIdx\x18\x04 \x01(\r\"\xa4\x01\n\x10VectorParameters\x12\x37\n\x08startPos\x18\x01 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x35\n\x06\x65ndPos\x18\x02 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x0e\n\x06radius\x18\x03 \x01(\x02\x12\x10\n\x08\x63olorIdx\x18\x04 \x01(\r\"\x1a\n\x0bTextMessage\x12\x0b\n\x03msg\x18\x01 \x01(\t\"\x99\x01\n\x11SignedTextMessage\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12?\n\rclientMessage\x18\x02 \x01(\x0b\x32(.transfers_graphics_protocol.TextMessage\"\x1c\n\nClickedIDs\x12\x0e\n\x06objIDs\x18\x01 \x03(\x04\"\x9a\x01\n\x10SignedClickedIDs\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x41\n\x10\x63lientClickedIDs\x18\x02 \x01(\x0b\x32\'.transfers_graphics_protocol.ClickedIDs2\xc7\x05\n\x0e\x43lientToServer\x12\x61\n\x0fintroduceClient\x12(.transfers_graphics_protocol.ClientHello\x1a\".transfers_graphics_protocol.Empty\"\x00\x12\x62\n\naddSpheres\x12,.transfers_graphics_protocol.BucketOfSpheres\x1a\".transfers_graphics_protocol.Empty\"\x00(\x01\x12^\n\x08\x61\x64\x64Lines\x12*.transfers_graphics_protocol.BucketOfLines\x1a\".transfers_graphics_protocol.Empty\"\x00(\x01\x12\x62\n\naddVectors\x12,.transfers_graphics_protocol.BucketOfVectors\x1a\".transfers_graphics_protocol.Empty\"\x00(\x01\x12\x63\n\x0bshowMessage\x12..transfers_graphics_protocol.SignedTextMessage\x1a\".transfers_graphics_protocol.Empty\"\x00\x12\x61\n\nfocusEvent\x12-.transfers_graphics_protocol.SignedClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x12\x62\n\x0bselectEvent\x12-.transfers_graphics_protocol.SignedClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x32\xaa\x02\n\x0eServerToClient\x12]\n\x0bshowMessage\x12(.transfers_graphics_protocol.TextMessage\x1a\".transfers_graphics_protocol.Empty\"\x00\x12[\n\nfocusEvent\x12\'.transfers_graphics_protocol.ClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x12\\\n\x0bselectEvent\x12\'.transfers_graphics_protocol.ClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x42+\n)cz.it4i.ulman.transfers.graphics.protocolb\x06proto3'
+  serialized_pb=b'\n\x1b\x62uckets_with_graphics.proto\x12\x1btransfers_graphics_protocol\"\x07\n\x05\x45mpty\"*\n\x14\x43lientIdentification\x12\x12\n\nclientName\x18\x01 \x01(\t\"e\n\x0b\x43lientHello\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x11\n\treturnURL\x18\x02 \x01(\t\"\xc5\x01\n\x0f\x42ucketOfSpheres\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x10\n\x08\x62ucketID\x18\x02 \x01(\x04\x12\r\n\x05label\x18\x03 \x01(\t\x12\x0c\n\x04time\x18\x04 \x01(\x04\x12>\n\x07spheres\x18\x05 \x03(\x0b\x32-.transfers_graphics_protocol.SphereParameters\"\xbf\x01\n\rBucketOfLines\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x10\n\x08\x62ucketID\x18\x02 \x01(\x04\x12\r\n\x05label\x18\x03 \x01(\t\x12\x0c\n\x04time\x18\x04 \x01(\x04\x12:\n\x05lines\x18\x05 \x03(\x0b\x32+.transfers_graphics_protocol.LineParameters\"\xc5\x01\n\x0f\x42ucketOfVectors\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x10\n\x08\x62ucketID\x18\x02 \x01(\x04\x12\r\n\x05label\x18\x03 \x01(\t\x12\x0c\n\x04time\x18\x04 \x01(\x04\x12>\n\x07vectors\x18\x05 \x03(\x0b\x32-.transfers_graphics_protocol.VectorParameters\"+\n\x08Vector3D\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\"l\n\x10SphereParameters\x12\x35\n\x06\x63\x65ntre\x18\x01 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x0e\n\x06radius\x18\x03 \x01(\x02\x12\x11\n\tcolorXRGB\x18\x04 \x01(\r\"\xa3\x01\n\x0eLineParameters\x12\x37\n\x08startPos\x18\x01 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x35\n\x06\x65ndPos\x18\x02 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x0e\n\x06radius\x18\x03 \x01(\x02\x12\x11\n\tcolorXRGB\x18\x04 \x01(\r\"\xa5\x01\n\x10VectorParameters\x12\x37\n\x08startPos\x18\x01 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x35\n\x06\x65ndPos\x18\x02 \x01(\x0b\x32%.transfers_graphics_protocol.Vector3D\x12\x0e\n\x06radius\x18\x03 \x01(\x02\x12\x11\n\tcolorXRGB\x18\x04 \x01(\r\"\x1a\n\x0bTextMessage\x12\x0b\n\x03msg\x18\x01 \x01(\t\"\x99\x01\n\x11SignedTextMessage\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12?\n\rclientMessage\x18\x02 \x01(\x0b\x32(.transfers_graphics_protocol.TextMessage\"\x1c\n\nClickedIDs\x12\x0e\n\x06objIDs\x18\x01 \x03(\x04\"\x9a\x01\n\x10SignedClickedIDs\x12\x43\n\x08\x63lientID\x18\x01 \x01(\x0b\x32\x31.transfers_graphics_protocol.ClientIdentification\x12\x41\n\x10\x63lientClickedIDs\x18\x02 \x01(\x0b\x32\'.transfers_graphics_protocol.ClickedIDs2\x96\x07\n\x0e\x43lientToServer\x12\x61\n\x0fintroduceClient\x12(.transfers_graphics_protocol.ClientHello\x1a\".transfers_graphics_protocol.Empty\"\x00\x12\x62\n\naddSpheres\x12,.transfers_graphics_protocol.BucketOfSpheres\x1a\".transfers_graphics_protocol.Empty\"\x00(\x01\x12^\n\x08\x61\x64\x64Lines\x12*.transfers_graphics_protocol.BucketOfLines\x1a\".transfers_graphics_protocol.Empty\"\x00(\x01\x12\x62\n\naddVectors\x12,.transfers_graphics_protocol.BucketOfVectors\x1a\".transfers_graphics_protocol.Empty\"\x00(\x01\x12\x63\n\x0bshowMessage\x12..transfers_graphics_protocol.SignedTextMessage\x1a\".transfers_graphics_protocol.Empty\"\x00\x12\x61\n\nfocusEvent\x12-.transfers_graphics_protocol.SignedClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x12g\n\x0cunfocusEvent\x12\x31.transfers_graphics_protocol.ClientIdentification\x1a\".transfers_graphics_protocol.Empty\"\x00\x12\x62\n\x0bselectEvent\x12-.transfers_graphics_protocol.SignedClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x12\x64\n\runselectEvent\x12-.transfers_graphics_protocol.SignedClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x32\xe4\x03\n\x0eServerToClient\x12]\n\x0bshowMessage\x12(.transfers_graphics_protocol.TextMessage\x1a\".transfers_graphics_protocol.Empty\"\x00\x12[\n\nfocusEvent\x12\'.transfers_graphics_protocol.ClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x12X\n\x0cunfocusEvent\x12\".transfers_graphics_protocol.Empty\x1a\".transfers_graphics_protocol.Empty\"\x00\x12\\\n\x0bselectEvent\x12\'.transfers_graphics_protocol.ClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x12^\n\runselectEvent\x12\'.transfers_graphics_protocol.ClickedIDs\x1a\".transfers_graphics_protocol.Empty\"\x00\x42+\n)cz.it4i.ulman.transfers.graphics.protocolb\x06proto3'
 )
 
 
@@ -370,7 +370,7 @@ _SPHEREPARAMETERS = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='colorIdx', full_name='transfers_graphics_protocol.SphereParameters.colorIdx', index=2,
+      name='colorXRGB', full_name='transfers_graphics_protocol.SphereParameters.colorXRGB', index=2,
       number=4, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -389,7 +389,7 @@ _SPHEREPARAMETERS = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=855,
-  serialized_end=962,
+  serialized_end=963,
 )
 
 
@@ -423,7 +423,7 @@ _LINEPARAMETERS = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='colorIdx', full_name='transfers_graphics_protocol.LineParameters.colorIdx', index=3,
+      name='colorXRGB', full_name='transfers_graphics_protocol.LineParameters.colorXRGB', index=3,
       number=4, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -441,8 +441,8 @@ _LINEPARAMETERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=965,
-  serialized_end=1127,
+  serialized_start=966,
+  serialized_end=1129,
 )
 
 
@@ -476,7 +476,7 @@ _VECTORPARAMETERS = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='colorIdx', full_name='transfers_graphics_protocol.VectorParameters.colorIdx', index=3,
+      name='colorXRGB', full_name='transfers_graphics_protocol.VectorParameters.colorXRGB', index=3,
       number=4, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -494,8 +494,8 @@ _VECTORPARAMETERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1130,
-  serialized_end=1294,
+  serialized_start=1132,
+  serialized_end=1297,
 )
 
 
@@ -526,8 +526,8 @@ _TEXTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1296,
-  serialized_end=1322,
+  serialized_start=1299,
+  serialized_end=1325,
 )
 
 
@@ -565,8 +565,8 @@ _SIGNEDTEXTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1325,
-  serialized_end=1478,
+  serialized_start=1328,
+  serialized_end=1481,
 )
 
 
@@ -597,8 +597,8 @@ _CLICKEDIDS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1480,
-  serialized_end=1508,
+  serialized_start=1483,
+  serialized_end=1511,
 )
 
 
@@ -636,8 +636,8 @@ _SIGNEDCLICKEDIDS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1511,
-  serialized_end=1665,
+  serialized_start=1514,
+  serialized_end=1668,
 )
 
 _CLIENTHELLO.fields_by_name['clientID'].message_type = _CLIENTIDENTIFICATION
@@ -780,8 +780,8 @@ _CLIENTTOSERVER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1668,
-  serialized_end=2379,
+  serialized_start=1671,
+  serialized_end=2589,
   methods=[
   _descriptor.MethodDescriptor(
     name='introduceClient',
@@ -844,9 +844,29 @@ _CLIENTTOSERVER = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
+    name='unfocusEvent',
+    full_name='transfers_graphics_protocol.ClientToServer.unfocusEvent',
+    index=6,
+    containing_service=None,
+    input_type=_CLIENTIDENTIFICATION,
+    output_type=_EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
     name='selectEvent',
     full_name='transfers_graphics_protocol.ClientToServer.selectEvent',
-    index=6,
+    index=7,
+    containing_service=None,
+    input_type=_SIGNEDCLICKEDIDS,
+    output_type=_EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='unselectEvent',
+    full_name='transfers_graphics_protocol.ClientToServer.unselectEvent',
+    index=8,
     containing_service=None,
     input_type=_SIGNEDCLICKEDIDS,
     output_type=_EMPTY,
@@ -866,8 +886,8 @@ _SERVERTOCLIENT = _descriptor.ServiceDescriptor(
   index=1,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=2382,
-  serialized_end=2680,
+  serialized_start=2592,
+  serialized_end=3076,
   methods=[
   _descriptor.MethodDescriptor(
     name='showMessage',
@@ -890,9 +910,29 @@ _SERVERTOCLIENT = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
+    name='unfocusEvent',
+    full_name='transfers_graphics_protocol.ServerToClient.unfocusEvent',
+    index=2,
+    containing_service=None,
+    input_type=_EMPTY,
+    output_type=_EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
     name='selectEvent',
     full_name='transfers_graphics_protocol.ServerToClient.selectEvent',
-    index=2,
+    index=3,
+    containing_service=None,
+    input_type=_CLICKEDIDS,
+    output_type=_EMPTY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='unselectEvent',
+    full_name='transfers_graphics_protocol.ServerToClient.unselectEvent',
+    index=4,
     containing_service=None,
     input_type=_CLICKEDIDS,
     output_type=_EMPTY,
