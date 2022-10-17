@@ -25,6 +25,10 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
 
     def __init__(self):
         # ----- VISIBILITY -----
+        # default and immutable state of some reference objects
+        self.hide_reference_position_objects = False
+        self.hide_color_palette_obj = True
+
         # some more reference objects
         self.color_palette_obj = None # makes the class to find (or create) it later
 
@@ -77,7 +81,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         clientName = request.clientID.clientName
         srcLevel = BU.get_collection_for_source(clientName)
         if srcLevel is None:
-            srcLevel = BU.create_new_collection_for_source(clientName,retURL)
+            srcLevel = BU.create_new_collection_for_source(clientName,retURL, hide_position_node = self.hide_reference_position_objects)
 
         self.done_working_with_Blender()
 
@@ -88,7 +92,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         if srcLevel is None:
             srcLevel = BU.get_collection_for_source("anonymous")
             if srcLevel is None:
-                srcLevel = BU.create_new_collection_for_source("anonymous", "no callback")
+                srcLevel = BU.create_new_collection_for_source("anonymous", "no callback", hide_position_node = True)
         return srcLevel
 
 
@@ -109,7 +113,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             bucketName = f"TP={request.time}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
-                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol)
+                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
             shapeRef = BU.add_sphere_shape_into_that_bucket(request.label, refSphere, self.get_main_color_palette_obj(), bucketLevelCol)
             shapeRef["ID"] = request.bucketID
@@ -145,7 +149,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             bucketName = f"TP={request.time}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
-                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol)
+                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
             shapeRef = BU.add_line_shape_into_that_bucket(request.label, refLine, self.get_main_color_palette_obj(), bucketLevelCol)
             shapeRef["ID"] = request.bucketID
@@ -184,7 +188,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             bucketName = f"TP={request.time}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
-                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol)
+                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
             shapeRef = BU.add_vector_shape_into_that_bucket(request.label, refVector,refVectorH, self.get_main_color_palette_obj(), bucketLevelCol)
             shapeRef["ID"] = request.bucketID

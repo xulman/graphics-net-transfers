@@ -1,7 +1,5 @@
 import bpy
 
-hide_aux_objects = True
-
 
 def move_obj_into_this_collection(obj, destination_col):
     if destination_col.objects.get(obj.name) is None:
@@ -19,7 +17,7 @@ def get_mainScene_collection():
     return bpy.data.scenes[0].collection
 
 
-def create_color_palette_node(name:str, namergb_quartets):
+def create_color_palette_node(name:str, namergb_quartets, hide_node = False):
     # a small, 4-point grid
     bpy.ops.mesh.primitive_grid_add(x_subdivisions=1, y_subdivisions=1)
     ref_obj = bpy.context.object
@@ -47,7 +45,7 @@ def create_color_palette_node(name:str, namergb_quartets):
         color_idx += 1
 
     ref_obj.active_material_index = 0
-    ref_obj.hide_viewport = hide_aux_objects
+    ref_obj.hide_viewport = hide_node
     return ref_obj
 
 def colors_enumerate_all():
@@ -85,7 +83,7 @@ def index_to_color(i):
     return r,g,b
 
 
-def create_new_collection_for_source(source_name:str, source_URL:str):
+def create_new_collection_for_source(source_name:str, source_URL:str, hide_position_node = False):
     # create a new collection
     new_src_col = bpy.data.collections.new(source_name)
 
@@ -100,7 +98,7 @@ def create_new_collection_for_source(source_name:str, source_URL:str):
     move_obj_into_this_collection(ref_obj, new_src_col)
     ref_obj.name = "Source reference position for "+source_name
     ref_obj["source_URL"] = source_URL
-    ref_obj.hide_viewport = hide_aux_objects
+    ref_obj.hide_viewport = hide_position_node
 
     return new_src_col
 
@@ -109,7 +107,7 @@ def get_collection_for_source(source_name:str):
     return get_colName_from_that_collectionRef(source_name, get_mainScene_collection())
 
 
-def create_new_bucket(bucket_name:str, display_time:int, source_col_ref):
+def create_new_bucket(bucket_name:str, display_time:int, source_col_ref, hide_position_node = False):
     # create a new collection
     new_col = bpy.data.collections.new(bucket_name)
 
@@ -124,7 +122,7 @@ def create_new_bucket(bucket_name:str, display_time:int, source_col_ref):
     ref_obj.name = "Bucket reference position for "+bucket_name
     ref_obj.parent = source_col_ref.objects[0]
     ref_obj["display_time"] = display_time
-    ref_obj.hide_viewport = hide_aux_objects
+    ref_obj.hide_viewport = hide_position_node
 
     return new_col
 
