@@ -51,6 +51,40 @@ def create_color_palette_node(name:str, namergb_quartets):
     ref_obj.hide_viewport = hide_aux_objects
     return ref_obj
 
+def colors_enumerate_all():
+    # creates quadruples "label",r,g,b
+    # where "label" is 0-to-255-scaled, comma-separated string, e.g. "128,192,16"
+    # and where the r,g,b are 0-to-1 scaled corresponding color elements
+    l_of_l = [ [f"{16*(i//256)},{16*((i%256)//16)},{16*(i%16)}",
+        (i//256)/16, ((i%256)//16)/16, (i%16)/16] for i in range(4096) ]
+    #
+    # the above does a list of lists -- [ [name,r,g,b],[...],...],
+    # and the below only flattens it
+    colors = [ i for sl in l_of_l for i in sl ]
+    #
+    # some special labels...
+    colors[0] = "black"
+    colors[-4] = "white"
+    return colors
+
+def integer_to_color(XRGB:int):
+    r = (XRGB // 65536) % 256
+    g =  (XRGB // 256)  % 256
+    b =      XRGB       % 256
+    return r,g,b
+
+def color_to_index(r,g,b):
+    i = b // 16
+    i += 16 * (g // 16)
+    i += 256 * (r // 16)
+    return i
+
+def index_to_color(i):
+    r = 16*( i // 256 )
+    g = 16*( (i // 16) % 16 )
+    b = 16*( i % 16 )
+    return r,g,b
+
 
 def create_new_collection_for_source(source_name:str, source_URL:str):
     # create a new collection
