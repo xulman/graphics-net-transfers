@@ -91,21 +91,21 @@ message Vector3D {
 message SphereParameters {
 	Vector3D centre = 1;
 	float radius    = 3;
-	uint32 colorIdx = 4;
+	uint32 colorXRGB = 4;
 }
 
 message LineParameters {
 	Vector3D startPos = 1;
 	Vector3D endPos = 2;
 	float radius    = 3;
-	uint32 colorIdx = 4;
+	uint32 colorXRGB  = 4;
 }
 
 message VectorParameters {
 	Vector3D startPos = 1;
 	Vector3D endPos = 2;
 	float radius    = 3;
-	uint32 colorIdx = 4;
+	uint32 colorXRGB  = 4;
 }
 
 
