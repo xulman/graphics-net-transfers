@@ -29,15 +29,23 @@ service ClientToServer {
 	rpc addVectors (stream BucketOfVectors) returns (Empty) {}
 
 	rpc showMessage (SignedTextMessage) returns (Empty) {}
-	rpc focusEvent  (SignedClickedIDs) returns (Empty) {}
-	rpc selectEvent (SignedClickedIDs) returns (Empty) {}
+
+	rpc focusEvent   (SignedClickedIDs)     returns (Empty) {}
+	rpc unfocusEvent (ClientIdentification) returns (Empty) {}
+
+	rpc selectEvent   (SignedClickedIDs) returns (Empty) {}
+	rpc unselectEvent (SignedClickedIDs) returns (Empty) {}
 }
 
 
 service ServerToClient {
 	rpc showMessage (TextMessage) returns (Empty) {}
-	rpc focusEvent  (ClickedIDs) returns (Empty) {}
-	rpc selectEvent (ClickedIDs) returns (Empty) {}
+
+	rpc focusEvent   (ClickedIDs) returns (Empty) {}
+	rpc unfocusEvent (Empty)      returns (Empty) {}
+
+	rpc selectEvent   (ClickedIDs) returns (Empty) {}
+	rpc unselectEvent (ClickedIDs) returns (Empty) {}
 }
 
 
