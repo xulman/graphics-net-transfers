@@ -122,7 +122,8 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
                 data.vertices[i].co.y = sphere.centre.y
                 data.vertices[i].co.z = sphere.centre.z
                 data.attributes['radius'].data[i].value = sphere.radius
-                data.attributes['material_idx'].data[i].value = sphere.colorIdx
+                r,g,b = BU.integer_to_color(sphere.colorXRGB)
+                data.attributes['material_idx'].data[i].value = BU.color_to_index(r,g,b)
 
         self.done_working_with_Blender()
 
@@ -159,7 +160,8 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
                 data.attributes['start_pos'].data[i].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
                 data.attributes['end_pos'].data[i].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
                 data.attributes['radius'].data[i].value = line.radius
-                data.attributes['material_idx'].data[i].value = line.colorIdx
+                r,g,b = BU.integer_to_color(line.colorXRGB)
+                data.attributes['material_idx'].data[i].value = BU.color_to_index(r,g,b)
 
         self.done_working_with_Blender()
 
@@ -197,7 +199,8 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
                 data.attributes['start_pos'].data[i].vector = [vec.startPos.x,vec.startPos.y,vec.startPos.z]
                 data.attributes['end_pos'].data[i].vector = [vec.endPos.x,vec.endPos.y,vec.endPos.z]
                 data.attributes['radius'].data[i].value = vec.radius
-                data.attributes['material_idx'].data[i].value = vec.colorIdx
+                r,g,b = BU.integer_to_color(vec.colorXRGB)
+                data.attributes['material_idx'].data[i].value = BU.color_to_index(r,g,b)
 
         self.done_working_with_Blender()
 

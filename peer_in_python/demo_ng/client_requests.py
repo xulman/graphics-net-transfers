@@ -4,9 +4,12 @@ import buckets_with_graphics_pb2
 import buckets_with_graphics_pb2_grpc_orig as buckets_with_graphics_pb2_grpc
 
 
+def rgb_to_integer(r,g,b):
+    return r*65536 + g*256 + b
+
 def main() -> None:
     # this is where it should be transfered to
-    clientName = "fakeMastodonRequester"
+    clientName = "colorReporter"
     clientURL = "localhost:9085"
     noOfSpheres = 2
 
@@ -48,7 +51,8 @@ def main() -> None:
             sphParams.centre.y = 0
             sphParams.centre.z = 0.1
             sphParams.radius = 1.1
-            sphParams.colorIdx = i % 3
+            colorShade = (1 + i%3) * 80
+            sphParams.colorXRGB = rgb_to_integer(colorShade,255//(i+1),0)
             bucket.spheres.append(sphParams)
         buckets.append(bucket)
         #
@@ -63,7 +67,8 @@ def main() -> None:
             sphParams.centre.y = 0.5
             sphParams.centre.z = 0.1
             sphParams.radius = 1.3
-            sphParams.colorIdx = i % 3
+            colorShade = (1 + i%3) * 80
+            sphParams.colorXRGB = rgb_to_integer(0,colorShade,0) #255//(i+1))
             bucket.spheres.append(sphParams)
         buckets.append(bucket)
         #
@@ -87,7 +92,8 @@ def main() -> None:
             vecParams.endPos.y = 0.5
             vecParams.endPos.z = 5.1
             vecParams.radius = 0.2
-            vecParams.colorIdx = i % 3
+            colorShade = (1 + i%3) * 80
+            vecParams.colorXRGB = rgb_to_integer(255//(i+1),0,colorShade)
             bucket.vectors.append(vecParams)
         buckets.append(bucket)
         comm.addVectors(iter(buckets))
