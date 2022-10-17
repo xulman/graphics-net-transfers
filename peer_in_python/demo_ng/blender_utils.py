@@ -1,7 +1,6 @@
 import bpy
 
 hide_aux_objects = True
-default_color_palette_node_name = "Default color palette"
 
 
 def move_obj_into_this_collection(obj, destination_col):
@@ -103,24 +102,11 @@ def create_new_collection_for_source(source_name:str, source_URL:str):
     ref_obj["source_URL"] = source_URL
     ref_obj.hide_viewport = hide_aux_objects
 
-    # introduce its color palettes collection, and a default color palette
-    new_colors_col = bpy.data.collections.new("Color palettes for "+source_name)
-    new_src_col.children.link(new_colors_col)
-
-    # a small, invisible grid to hold colors
-    color_node = create_color_palette_node(default_color_palette_node_name, ["red",1,0,0, "green",0,1,0, "blue",0,0,1])
-    move_obj_into_this_collection(color_node, new_colors_col)
-
     return new_src_col
 
 
 def get_collection_for_source(source_name:str):
     return get_colName_from_that_collectionRef(source_name, get_mainScene_collection())
-
-def get_default_color_palette_for_source(source_name:str):
-    col = get_collection_for_source(source_name)
-    #return col.children[0].objects[0]
-    return col.children["Color palettes for "+source_name].objects.get(default_color_palette_node_name)
 
 
 def create_new_bucket(bucket_name:str, display_time:int, source_col_ref):
@@ -270,7 +256,7 @@ def demo():
     print(srcLevelCol.name)
 
     refSphere = bpy.data.objects["refSphere"]
-    basicColorPalette = srcLevelCol.objects.get(default_color_palette_node_name)
+    basicColorPalette = bpy.data.objects["Color palette"]
 
     bucketLevelCol = create_new_bucket("tp=4", 4, srcLevelCol)
     shapeRef = add_sphere_shape_into_that_bucket("spheres", refSphere, basicColorPalette, bucketLevelCol)

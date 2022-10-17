@@ -8,7 +8,27 @@ import bpy
 
 class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerServicer):
 
+    def get_main_color_palette_obj(self):
+        if self.color_palette_obj is not None:
+            return self.color_palette_obj
+
+        self.color_palette_obj = bpy.data.objects.get("Color palette")
+        if self.color_palette_obj is None:
+            print("WARN: not found 'Color palette' node, creating one...")
+            print("  ...which may take a little time, please wait")
+            self.color_palette_obj = BU.create_color_palette_node("Color palette",
+                    BU.colors_enumerate_all(), hide_node = self.hide_color_palette_obj)
+            BU.move_obj_into_this_collection(self.color_palette_obj, BU.get_mainScene_collection())
+            print("  ...done creating this node")
+        return self.color_palette_obj
+
+
     def __init__(self):
+        # ----- VISIBILITY -----
+        # some more reference objects
+        self.color_palette_obj = None # makes the class to find (or create) it later
+
+        # ----- COMMUNICATION -----
         # to make sure that talking to Blender is serialized
         # -> only one is modifying Blender at a time
         self.request_lock = Lock()
@@ -82,7 +102,6 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
             refSphere = bpy.data.objects["refSphere"]
-            basicColorPalette = srcLevelCol.children[0].objects.get(BU.default_color_palette_node_name)
 
             print(f"Client '{self.report_client(request.clientID)}' requests displaying on server:")
             print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for time {request.time}")
@@ -92,7 +111,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol)
 
-            shapeRef = BU.add_sphere_shape_into_that_bucket(request.label, refSphere, basicColorPalette, bucketLevelCol)
+            shapeRef = BU.add_sphere_shape_into_that_bucket(request.label, refSphere, self.get_main_color_palette_obj(), bucketLevelCol)
             shapeRef["ID"] = request.bucketID
 
             data = shapeRef.data
@@ -118,7 +137,6 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
             refLine = bpy.data.objects["refLine"]
-            basicColorPalette = srcLevelCol.children[0].objects.get(BU.default_color_palette_node_name)
 
             print(f"Client '{self.report_client(request.clientID)}' requests displaying on server:")
             print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for time {request.time}")
@@ -128,7 +146,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol)
 
-            shapeRef = BU.add_line_shape_into_that_bucket(request.label, refLine, basicColorPalette, bucketLevelCol)
+            shapeRef = BU.add_line_shape_into_that_bucket(request.label, refLine, self.get_main_color_palette_obj(), bucketLevelCol)
             shapeRef["ID"] = request.bucketID
 
             data = shapeRef.data
@@ -157,7 +175,6 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             srcLevelCol = self.get_client_collection(request.clientID)
             refVector = bpy.data.objects["refVector"]
             refVectorH = refVector.children[0]
-            basicColorPalette = srcLevelCol.children[0].objects.get(BU.default_color_palette_node_name)
 
             print(f"Client '{self.report_client(request.clientID)}' requests displaying on server:")
             print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for time {request.time}")
@@ -167,7 +184,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol)
 
-            shapeRef = BU.add_vector_shape_into_that_bucket(request.label, refVector,refVectorH, basicColorPalette, bucketLevelCol)
+            shapeRef = BU.add_vector_shape_into_that_bucket(request.label, refVector,refVectorH, self.get_main_color_palette_obj(), bucketLevelCol)
             shapeRef["ID"] = request.bucketID
 
             data = shapeRef.data
