@@ -1,1 +1,0 @@
-../points_and_lines_pb2_grpc.py
