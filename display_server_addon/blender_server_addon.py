@@ -17,7 +17,7 @@
 from concurrent import futures
 import grpc
 import bpy
-import display_server_addon.buckets_with_graphics_pb2_grpc as Gbuckets_with_graphics_pb2_grpc
+from . import buckets_with_graphics_pb2_grpc
 from . import blender_server_service
 
 serverName = "Blender DisplayServer"
@@ -28,7 +28,7 @@ class BlenderServerAddon:
     def __init__(self):
         # running the server's listening service
         self.server = grpc.server( futures.ThreadPoolExecutor(2,serverName) )
-        Gbuckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(blender_server_service.BlenderServerService(),self.server)
+        buckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(blender_server_service.BlenderServerService(),self.server)
         self.server.add_insecure_port('[::]:%d'%serverPort)
         self.server.start()
         print(f"'{serverName}' is ready and listening")

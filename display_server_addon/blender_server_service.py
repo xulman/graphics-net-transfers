@@ -1,12 +1,12 @@
-import display_server_addon.buckets_with_graphics_pb2 as Gbuckets_with_graphics_pb2
-import display_server_addon.buckets_with_graphics_pb2_grpc as Gbuckets_with_graphics_pb2_grpc
+from . import buckets_with_graphics_pb2 as PROTOCOL
+from . import buckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
 from threading import Lock
 from time import sleep
 import bpy
 
 
-class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerServicer):
+class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
 
     def get_main_color_palette_obj(self):
         if self.color_palette_obj is not None:
@@ -64,12 +64,12 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         self.request_callback_is_running = False
 
 
-    def introduceClient(self, request: Gbuckets_with_graphics_pb2.ClientHello, context):
+    def introduceClient(self, request: PROTOCOL.ClientHello, context):
         self.submit_work_for_Blender_and_wait(self.introduceClient_worker, request, "introduceClient()")
-        return Gbuckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
 
     def introduceClient_worker(self):
-        request: Gbuckets_with_graphics_pb2.ClientHello = self.request_data
+        request: PROTOCOL.ClientHello = self.request_data
 
         print(f"Server registers {self.report_client(request.clientID)}")
         retURL = request.returnURL
@@ -87,7 +87,7 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         self.done_working_with_Blender()
 
 
-    def get_client_collection(self, client: Gbuckets_with_graphics_pb2.ClientIdentification):
+    def get_client_collection(self, client: PROTOCOL.ClientIdentification):
         clientName = client.clientName
         srcLevel = BU.get_collection_for_source(clientName)
         if srcLevel is None:
@@ -97,12 +97,12 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         return srcLevel
 
 
-    def addSpheres(self, request_iterator: Gbuckets_with_graphics_pb2.BucketOfSpheres, context):
+    def addSpheres(self, request_iterator: PROTOCOL.BucketOfSpheres, context):
         self.submit_work_for_Blender_and_wait(self.addSpheres_worker, request_iterator, "addSpheres()")
-        return Gbuckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
 
     def addSpheres_worker(self):
-        request_iterator: Gbuckets_with_graphics_pb2.BucketOfSpheres = self.request_data
+        request_iterator: PROTOCOL.BucketOfSpheres = self.request_data
 
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
@@ -135,9 +135,9 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         self.done_working_with_Blender()
 
 
-    def addLines(self, request_iterator: Gbuckets_with_graphics_pb2.BucketOfLines, context):
+    def addLines(self, request_iterator: PROTOCOL.BucketOfLines, context):
         self.submit_work_for_Blender_and_wait(self.addLines_worker, request_iterator, "addLines()")
-        return Gbuckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
 
     def addLines_worker(self):
         request_iterator = self.request_data
@@ -175,9 +175,9 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         self.done_working_with_Blender()
 
 
-    def addVectors(self, request_iterator: Gbuckets_with_graphics_pb2.BucketOfVectors, context):
+    def addVectors(self, request_iterator: PROTOCOL.BucketOfVectors, context):
         self.submit_work_for_Blender_and_wait(self.addVectors_worker, request_iterator, "addVectors()")
-        return Gbuckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
 
     def addVectors_worker(self):
         request_iterator = self.request_data
@@ -216,20 +216,20 @@ class BlenderServerService(Gbuckets_with_graphics_pb2_grpc.ClientToServerService
         self.done_working_with_Blender()
 
 
-    def showMessage(self, request: Gbuckets_with_graphics_pb2.SignedTextMessage, context):
+    def showMessage(self, request: PROTOCOL.SignedTextMessage, context):
         print(f"Message from {self.report_client(request.clientID)}: {request.clientMessage.msg}")
-        return Gbuckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
 
-    def focusEvent(self, request: Gbuckets_with_graphics_pb2.SignedClickedIDs, context):
+    def focusEvent(self, request: PROTOCOL.SignedClickedIDs, context):
         print(f"Client '{self.report_client(request.clientID)}' requests server to focus on IDs: {request.clientClickedIDs.objIDs}")
-        return Gbuckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
 
-    def selectEvent(self, request: Gbuckets_with_graphics_pb2.SignedClickedIDs, context):
+    def selectEvent(self, request: PROTOCOL.SignedClickedIDs, context):
         print(f"Client '{self.report_client(request.clientID)}' requests server to select IDs: {request.clientClickedIDs.objIDs}")
-        return Gbuckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
 
 
-    def report_client(self, client: Gbuckets_with_graphics_pb2.ClientIdentification):
+    def report_client(self, client: PROTOCOL.ClientIdentification):
         return "client '"+client.clientName+"'"
-    def report_vector(self, vec: Gbuckets_with_graphics_pb2.Vector3D):
+    def report_vector(self, vec: PROTOCOL.Vector3D):
         return f"[{vec.x},{vec.y},{vec.z}]"
