@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import demo_ng.buckets_with_graphics_pb2 as buckets__with__graphics__pb2
+from . import buckets_with_graphics_pb2 as buckets__with__graphics__pb2
 
 
 class ClientToServerStub(object):

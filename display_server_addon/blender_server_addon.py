@@ -17,40 +17,41 @@
 from concurrent import futures
 import grpc
 import bpy
-import demo_ng.buckets_with_graphics_pb2_grpc as Gbuckets_with_graphics_pb2_grpc
-from . import blender_server_listens
+from . import buckets_with_graphics_pb2_grpc
+from . import blender_server_service
 
-serverName = "Blender server"
+serverName = "Blender DisplayServer"
 serverPort = 9083
 
 
-class MastodonBlenderServer:
+class BlenderServerAddon:
     def __init__(self):
         # running the server's listening service
         self.server = grpc.server( futures.ThreadPoolExecutor(2,serverName) )
-        Gbuckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(blender_server_listens.BlenderServerService(),self.server)
+        buckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(blender_server_service.BlenderServerService(),self.server)
         self.server.add_insecure_port('[::]:%d'%serverPort)
         self.server.start()
-        print(f"Server '{serverName}' ready and listening")
+        print(f"'{serverName}' is ready and listening")
 
     def stop(self):
-        print(f"Server '{serverName}' is stopping")
+        print(f"'{serverName}' is stopping")
         self.server.stop(None)
 
-mastodon_blender_server = None
+
+# -----------------------------------------------------------------
+blender_server_addon = None
 
 
 def register():
     bpy.app.timers.register(delayed_start_server, first_interval=1)
 
-
 def delayed_start_server():
-    global mastodon_blender_server
-    mastodon_blender_server = MastodonBlenderServer()
+    global blender_server_addon
+    blender_server_addon = BlenderServerAddon()
 
 
 def unregister():
-    global mastodon_blender_server
-    if mastodon_blender_server is not None:
-        mastodon_blender_server.stop()
-        mastodon_blender_server = None
+    global blender_server_addon
+    if blender_server_addon is not None:
+        blender_server_addon.stop()
+        blender_server_addon = None
