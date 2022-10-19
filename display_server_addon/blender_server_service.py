@@ -1,5 +1,5 @@
-import demo_ng.buckets_with_graphics_pb2 as Gbuckets_with_graphics_pb2
-import demo_ng.buckets_with_graphics_pb2_grpc as Gbuckets_with_graphics_pb2_grpc
+import display_server_addon.buckets_with_graphics_pb2 as Gbuckets_with_graphics_pb2
+import display_server_addon.buckets_with_graphics_pb2_grpc as Gbuckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
 from threading import Lock
 from time import sleep

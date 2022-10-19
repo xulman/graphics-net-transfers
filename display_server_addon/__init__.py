@@ -9,12 +9,12 @@ bl_info = {
     "category": "3D View"
 }
 
-from . import mb_server
+from . import blender_server_addon
 
 
 def register():
-    mb_server.register()
+    blender_server_addon.register()
 
 
 def unregister():
-    mb_server.unregister()
+    blender_server_addon.unregister()
