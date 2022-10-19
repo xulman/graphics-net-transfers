@@ -1,0 +1,34 @@
+messaging, use-cases:
+
+init:
+
+C: - sends hello-no-feedback-please message where it states its client_nickname
+     (hello-no-feedback-please is technically a normal hello message with empty client_URL)
+S: - wants now to create a "(display) server level collection (SLC)" for this client
+   - sets client_URL to "no_feedback"
+   - finds SLC that matches in client_nickname and client_URL
+     - not found -> create a new one
+   - does not reply anything
+
+C: - sends hello message where it states its client_nickname and client_URL
+S: - wants now to create a "(display) server level collection (SLC)" for this client
+   - finds SLC that matches in client_nickname and client_URL
+     - not found -> create a new one
+   - replies with "ready" (to test the backward connection)
+   - does not reply anything
+   - BUT, should try to "ping" client_URL for a connection test...
+
+
+with every batch of data:
+
+C: - starts by declaring a bucket to be writing into the upcoming graphics
+   - sends client_nickname, bucket_name (plus its ID) and display_time
+   - bucket_name should be rather short!
+	- stream of buckets -- the batch of data to be actually displayed
+	  (buckets we envisioned to be semantically different groups of data)
+	  (a bucket content is technically displayed using the instancing)
+S: - finds SLC matching the client_nickname
+     - not found -> reuse-or-create "anonymous/no_feedback" SLC
+   - finds bucket that matches in bucket_name and display_time
+     - not found -> create a new one
+   - adds (is not overwriting) the display data (spheres, lines or vectors)

@@ -1,12 +1,17 @@
 .DS_Store
-.*.sw*
+.*.sw?
 
 peer_in_python/__pycache__
+peer_in_python/*/__pycache__
 peer_in_java/target
 peer_in_cpp/build*
+peer_in_cpp/BUILD*
 
 *.idea
 *.iml
 .classpath
 .project
 .settings/
+
+*.blend?
+*lock*

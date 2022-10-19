@@ -20,5 +20,41 @@ protoc.main((
     '-Iprotocol_specification',
     '--python_out=peer_in_python/',
     '--grpc_python_out=peer_in_python/',
-    'points_and_lines.proto',
+    'buckets_with_graphics.proto',
 ))
+
+
+# copy the stub files also into another folder
+# and fix one import to allow it to work within Blender
+pb_file  = 'buckets_with_graphics_pb2.py'
+rpc_file = 'buckets_with_graphics_pb2_grpc.py'
+src_fldr = 'peer_in_python'
+tgt_fldr = 'display_server_addon'
+
+def fix_import_statement(file: str):
+    content = ""
+    with open(file, "r") as f:
+        content = f.readlines()
+
+    search_str = "import buckets_with_graphics_pb2 as"
+    import_line = -1
+    import_found = False
+    while not import_found and import_line < 50 and import_line < len(content):
+        import_line += 1
+        import_found = ( content[import_line].find(search_str) == 0 )
+
+    if not import_found:
+        print("Warning: failed to find the import line to fix it...")
+        return
+
+    # the fix!
+    content[import_line] = "from . " + content[import_line]
+
+    with open(file, "w") as f:
+        f.writelines(content)
+
+
+import shutil
+shutil.copyfile(f"{src_fldr}/{pb_file}",  f"{tgt_fldr}/{pb_file}")
+shutil.copyfile(f"{src_fldr}/{rpc_file}", f"{tgt_fldr}/{rpc_file}")
+fix_import_statement(f"{tgt_fldr}/{rpc_file}")
