@@ -94,7 +94,7 @@ def setup_geom_attribs_in_this_pointcloud(shape_node_ref, withPosAttribs:bool):
         mesh.attributes.new("end_pos",'FLOAT_VECTOR','POINT')
 
 
-def add_sphere_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
+def add_sphere_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_shapes_col_ref):
     shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
     if shape_node is not None:
         return shape_node
@@ -120,7 +120,7 @@ def add_sphere_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_pa
     return shape_node
 
 
-def add_line_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
+def add_line_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_shapes_col_ref):
     shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
     if shape_node is not None:
         return shape_node
@@ -150,7 +150,7 @@ def add_line_shape_into_that_bucket(node_name:str, shape_ref_obj_ref, color_pale
     return shape_node
 
 
-def add_vector_shape_into_that_bucket(node_name:str, shape_ref_obj_ref,shapeHead_ref_obj_ref, color_palette_obj_ref, bucket_col_ref):
+def add_vector_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_shaft_shapes_col_ref,colored_head_shapes_col_ref):
     shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
     if shape_node is not None:
         return shape_node

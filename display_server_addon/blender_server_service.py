@@ -1,6 +1,7 @@
 from . import buckets_with_graphics_pb2 as PROTOCOL
 from . import buckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
+from . import color_palette as CP
 from threading import Lock
 from time import sleep
 import bpy
@@ -8,19 +9,49 @@ import bpy
 
 class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
 
-    def get_main_color_palette_obj(self):
-        if self.color_palette_obj is not None:
-            return self.color_palette_obj
+    def get_or_create_reference_colored_nodes_collection(self, wanted_ref_color_and_shape_col_name, for_this_ref_shape_obj):
+        col = bpy.data.collections.get(wanted_ref_color_and_shape_col_name)
+        if col is None:
+            col = self.palette.create_blender_reference_colored_nodes_into_new_collection(for_this_ref_shape_obj, wanted_ref_color_and_shape_col_name)
+        return col
 
-        self.color_palette_obj = bpy.data.objects.get("Color palette")
-        if self.color_palette_obj is None:
-            print("WARN: not found 'Color palette' node, creating one...")
-            print("  ...which may take a little time, please wait")
-            self.color_palette_obj = BU.create_color_palette_node("Color palette",
-                    BU.colors_enumerate_all(), hide_node = self.hide_color_palette_obj)
-            BU.move_obj_into_this_collection(self.color_palette_obj, BU.get_mainScene_collection())
-            print("  ...done creating this node")
-        return self.color_palette_obj
+
+    def rebuild_reference_colored_nodes_collections(self):
+        sphereObj = bpy.data.objects.get(self.ref_shape_sphere_name)
+        if sphereObj is None:
+            print(f"Failed to find {self.ref_shape_sphere_name} to use as the reference shape for SPHERES.")
+            print("Please, create a blender object of that name, or change BlenderServerService's attribute 'ref_shape_sphere_name' to some existing one.")
+
+        lineObj = bpy.data.objects.get(self.ref_shape_line_name)
+        if lineObj is None:
+            print(f"Failed to find {self.ref_shape_line_name} to use as the reference shape for LINES.")
+            print("Please, create a blender object of that name, or change BlenderServerService's attribute 'ref_shape_line_name' to some existing one.")
+
+        vecShaftObj = bpy.data.objects.get(self.ref_shape_shaft_name)
+        if vecShaftObj is None:
+            print(f"Failed to find {self.ref_shape_shaft_name} to use as the reference shape for VECTORS SHAFTS.")
+            print("Please, create a blender object of that name, or change BlenderServerService's attribute 'ref_shape_shaft_name' to some existing one.")
+
+        vecHeadObj = bpy.data.objects.get(self.ref_shape_head_name)
+        if vecHeadObj is None:
+            print(f"Failed to find {self.ref_shape_head_name} to use as the reference shape for VECTORS HEADS.")
+            print("Please, create a blender object of that name, or change BlenderServerService's attribute 'ref_shape_head_name' to some existing one.")
+
+        self.colored_ref_spheres_col = \
+            self.get_or_create_reference_colored_nodes_collection(
+                    self.colored_ref_spheres_col_name, sphereObj)
+
+        self.colored_ref_lines_col = \
+            self.get_or_create_reference_colored_nodes_collection(
+                    self.colored_ref_lines_col_name, lineObj)
+
+        self.colored_ref_shafts_col = \
+            self.get_or_create_reference_colored_nodes_collection(
+                    self.colored_ref_shafts_col_name, vecShaftObj)
+
+        self.colored_ref_heads_col = \
+            self.get_or_create_reference_colored_nodes_collection(
+                    self.colored_ref_heads_col_name, vecHeadObj)
 
 
     def __init__(self):
@@ -30,8 +61,21 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.hide_color_palette_obj = True
         self.report_individual_incoming_items = False
 
-        # some more reference objects
-        self.color_palette_obj = None # makes the class to find (or create) it later
+        # shape reference objects
+        self.ref_shape_sphere_name = "refSphere"
+        self.ref_shape_line_name = "refLine"
+        self.ref_shape_shaft_name = "refVectorShaft"
+        self.ref_shape_head_name = "refVectorHead"
+
+        # color reference objects (which will include/swallow the shape ones!)
+        self.colored_ref_spheres_col_name = "Reference spheres"
+        self.colored_ref_lines_col_name = "Reference lines"
+        self.colored_ref_shafts_col_name = "Reference shafts"
+        self.colored_ref_heads_col_name = "Reference heads"
+
+        # color palette
+        self.palette = CP.ColorPalette()
+        self.rebuild_reference_colored_nodes_collections()
 
         # ----- COMMUNICATION -----
         # to make sure that talking to Blender is serialized
@@ -41,6 +85,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         # to signal Blender's callback is active
         self.request_callback_is_running = False
+
 
     def submit_work_for_Blender_and_wait(self, code, data, reports_name: str):
         print(f"{reports_name} wants to talk to Blender...")
@@ -106,7 +151,6 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
-            refSphere = bpy.data.objects["refSphere"]
 
             print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
             print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for "
@@ -117,7 +161,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
-            shapeRef = BU.add_sphere_shape_into_that_bucket(request.label, refSphere, self.get_main_color_palette_obj(), bucketLevelCol)
+            shapeRef = BU.add_sphere_shape_into_that_bucket(request.label, bucketLevelCol, self.colored_ref_spheres_col)
             shapeRef["ID"] = request.bucketID
 
             data = shapeRef.data
@@ -144,7 +188,6 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
-            refLine = bpy.data.objects["refLine"]
 
             print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
             print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for "
@@ -155,7 +198,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
-            shapeRef = BU.add_line_shape_into_that_bucket(request.label, refLine, self.get_main_color_palette_obj(), bucketLevelCol)
+            shapeRef = BU.add_line_shape_into_that_bucket(request.label, bucketLevelCol, self.colored_ref_lines_col)
             shapeRef["ID"] = request.bucketID
 
             data = shapeRef.data
@@ -184,8 +227,6 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
-            refVector = bpy.data.objects["refVector"]
-            refVectorH = refVector.children[0]
 
             print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
             print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for "
@@ -196,7 +237,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
-            shapeRef = BU.add_vector_shape_into_that_bucket(request.label, refVector,refVectorH, self.get_main_color_palette_obj(), bucketLevelCol)
+            shapeRef = BU.add_vector_shape_into_that_bucket(request.label, bucketLevelCol, self.colored_ref_shafts_col,self.colored_ref_heads_col)
             shapeRef["ID"] = request.bucketID
 
             data = shapeRef.data
