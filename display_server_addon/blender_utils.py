@@ -148,7 +148,7 @@ def add_vector_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_sha
     display_time = ref_point_for_bucket["display_time"]
 
     # setup Geometry Nodes
-    gn = shape_node.modifiers.new("Instancing using "+colored_shaft_shapes_col_ref.name+" and "+colored_head_shapes_col_ref,"NODES")
+    gn = shape_node.modifiers.new("Instancing using "+colored_shaft_shapes_col_ref.name+" and "+colored_head_shapes_col_ref.name,"NODES")
     gn.node_group = bpy.data.objects['gnHolder_Vector'].modifiers['GeometryNodes'].node_group
     gn['Input_2'] = display_time
     gn['Input_6'] = ref_point_for_bucket          # ref_position input
