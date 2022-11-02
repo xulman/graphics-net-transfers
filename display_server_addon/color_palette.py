@@ -129,7 +129,6 @@ class ColorPalette:
             # create an independent clone of the reference shape
             o = ref_shape_blender_obj.copy()
             o.data = ref_shape_blender_obj.data.copy() # to be able to have own materials
-            o.hide_viewport = True
 
             # give it a sort-order-preserving name
             o.name = f"{idx}: {n}"
