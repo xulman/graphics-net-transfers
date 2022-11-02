@@ -167,14 +167,20 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             data = shapeRef.data
             data.vertices.add(len(request.spheres))
             for i,sphere in enumerate(request.spheres):
+                colorIdx = 0
+                if sphere.HasField('colorIdx'):
+                    colorIdx = sphere.colorIdx
+                else:
+                    colorIdx = self.palette.get_index_for_XRGB(sphere.colorXRGB)
+
                 if self.report_individual_incoming_items:
-                    print(f"Sphere at {self.report_vector(sphere.centre)}, radius={sphere.radius}, color={BU.integer_to_color(sphere.colorXRGB)}")
+                    print(f"Sphere at {self.report_vector(sphere.centre)}, radius={sphere.radius}, colorIdx={colorIdx}")
+
                 data.vertices[i].co.x = sphere.centre.x
                 data.vertices[i].co.y = sphere.centre.y
                 data.vertices[i].co.z = sphere.centre.z
                 data.attributes['radius'].data[i].value = sphere.radius
-                r,g,b = BU.integer_to_color(sphere.colorXRGB)
-                data.attributes['material_idx'].data[i].value = BU.color_to_index(r,g,b)
+                data.attributes['material_idx'].data[i].value = colorIdx
 
         self.done_working_with_Blender()
 
@@ -204,16 +210,22 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             data = shapeRef.data
             data.vertices.add(len(request.lines))
             for i,line in enumerate(request.lines):
+                colorIdx = 0
+                if line.HasField('colorIdx'):
+                    colorIdx = line.colorIdx
+                else:
+                    colorIdx = self.palette.get_index_for_XRGB(line.colorXRGB)
+
                 if self.report_individual_incoming_items:
-                    print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}, radius={line.radius}, color={BU.integer_to_color(line.colorXRGB)}")
+                    print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}, radius={line.radius}, colorIdx={colorIdx}")
+
                 data.vertices[i].co.x = line.startPos.x
                 data.vertices[i].co.y = line.startPos.y
                 data.vertices[i].co.z = line.startPos.z
                 data.attributes['start_pos'].data[i].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
                 data.attributes['end_pos'].data[i].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
                 data.attributes['radius'].data[i].value = line.radius
-                r,g,b = BU.integer_to_color(line.colorXRGB)
-                data.attributes['material_idx'].data[i].value = BU.color_to_index(r,g,b)
+                data.attributes['material_idx'].data[i].value = colorIdx
 
         self.done_working_with_Blender()
 
@@ -243,16 +255,22 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             data = shapeRef.data
             data.vertices.add(len(request.vectors))
             for i,vec in enumerate(request.vectors):
+                colorIdx = 0
+                if vec.HasField('colorIdx'):
+                    colorIdx = vec.colorIdx
+                else:
+                    colorIdx = self.palette.get_index_for_XRGB(vec.colorXRGB)
+
                 if self.report_individual_incoming_items:
-                    print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}, radius={vec.radius}, color={BU.integer_to_color(vec.colorXRGB)}")
+                    print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}, radius={vec.radius}, colorIdx={colorIdx}")
+
                 data.vertices[i].co.x = vec.startPos.x
                 data.vertices[i].co.y = vec.startPos.y
                 data.vertices[i].co.z = vec.startPos.z
                 data.attributes['start_pos'].data[i].vector = [vec.startPos.x,vec.startPos.y,vec.startPos.z]
                 data.attributes['end_pos'].data[i].vector = [vec.endPos.x,vec.endPos.y,vec.endPos.z]
                 data.attributes['radius'].data[i].value = vec.radius
-                r,g,b = BU.integer_to_color(vec.colorXRGB)
-                data.attributes['material_idx'].data[i].value = BU.color_to_index(r,g,b)
+                data.attributes['material_idx'].data[i].value = colorIdx
 
         self.done_working_with_Blender()
 
