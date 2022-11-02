@@ -13,7 +13,7 @@ def main() -> None:
 
 
 
-    noOfSpheres = 3000
+    noOfSpheres = 10000
 
 
     try:
@@ -35,25 +35,25 @@ def main() -> None:
             bucket.clientID.clientName = clientName
             bucket.bucketID = 121
             bucket.label = f"many spheres, row {j+1}"
-            bucket.time = 7
+            bucket.time = 9
             for i in range(noOfSpheres):
                 x = i // 100
                 y = i % 100
                 sphParams = buckets_with_graphics_pb2.SphereParameters()
-                sphParams.centre.x = x
+                sphParams.centre.x = x+0.8
                 sphParams.centre.y = y
                 sphParams.centre.z = j
                 sphParams.radius = 0.3
                 sphParams.colorXRGB = 80+ 80*(i % 3)
                 bucket.spheres.append(sphParams)
             buckets.append(bucket)
-        #comm.addSpheres(iter(buckets))
+        comm.addSpheres(iter(buckets))
 
         bucket = buckets_with_graphics_pb2.BucketOfLines()
         bucket.clientID.clientName = clientName
         bucket.bucketID = 128
         bucket.label = "testing lines"
-        bucket.time = 5
+        bucket.time = 6
         #
         line = buckets_with_graphics_pb2.LineParameters()
         line.startPos.x = 10
@@ -63,7 +63,9 @@ def main() -> None:
         line.endPos.y = 10
         line.endPos.z = 16
         line.radius = 2
-        line.colorXRGB = 0x00FFFFFEline = buckets_with_graphics_pb2.LineParameters()
+        line.colorXRGB = 0x00FFFFFE
+        #
+        line = buckets_with_graphics_pb2.LineParameters()
         line.startPos.x = 10
         line.startPos.y = 10
         line.startPos.z = 16
@@ -98,7 +100,7 @@ def main() -> None:
         #
         stream_of_lines = list()
         stream_of_lines.append(bucket)
-        comm.addVectors(iter(stream_of_lines))
+        #comm.addVectors(iter(stream_of_lines))
 
     except RpcError as e:
         print("Some connection error, details follow:")
