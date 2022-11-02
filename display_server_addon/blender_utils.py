@@ -49,7 +49,7 @@ def create_new_bucket(bucket_name:str, display_time:int, source_col_ref, hide_po
     source_col_ref.children.link(new_col)
 
     # introduce its reference point
-    bpy.ops.object.empty_add(type='CUBE')
+    bpy.ops.object.empty_add(type='CUBE') # TODO
     ref_obj = bpy.context.object
     #
     move_obj_into_this_collection(ref_obj, new_col)
