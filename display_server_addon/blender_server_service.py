@@ -91,6 +91,8 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         # to signal Blender's callback is active
         self.request_callback_is_running = False
+        self.request_callback_routine = None
+
 
     def do_postponed_initialization(self):
         # essentially a collection of methods that should be used during init(),
@@ -101,23 +103,27 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         # in general, the methods listed below should be guarding themselves
         # with the self.stop_and_wait_for_the_first_actual_use()
         self.stop_and_wait_for_the_first_actual_use = False
-        print("First real usage of this service detected... finalizing some late initializations...")
+        print("First real usage of this service detected, finalizing some late initializations...")
 
         self.rebuild_reference_colored_nodes_collections()
+        print("Done finalizing some late initializations...\n")
 
+
+    def runs_when_blender_allows(self):
+        if self.stop_and_wait_for_the_first_actual_use:
+            self.do_postponed_initialization()
+        self.request_callback_routine()
 
     def submit_work_for_Blender_and_wait(self, code, data, reports_name: str):
         print(f"{reports_name} wants to talk to Blender...")
         self.request_lock.acquire()
         print(f"{reports_name} is now talking to Blender...")
 
-        if self.stop_and_wait_for_the_first_actual_use:
-            self.do_postponed_initialization()
-
         # prepare data and ask Blender to execute our code
         self.request_data = data
         self.request_callback_is_running = True
-        bpy.app.timers.register(code, first_interval=0.01)
+        self.request_callback_routine = code
+        bpy.app.timers.register(self.runs_when_blender_allows, first_interval=0.01)
 
         # wait for our code to finish
         # NB: flag is cleared in the signalling method done_working_with_Blender()
