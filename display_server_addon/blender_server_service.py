@@ -130,7 +130,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         while self.request_callback_is_running:
             sleep(0.2)
 
-        print(f"{reports_name} just finished talking to Blender...")
+        print(f"{reports_name} just finished talking to Blender...\n")
         self.request_lock.release()
 
     def done_working_with_Blender(self):
@@ -180,7 +180,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
 
-            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
+            print(f"Request from {self.report_client(request.clientID)} to display on server.")
             print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for "
                 f"time {request.time} with {len(request.spheres)} items.")
 
@@ -224,7 +224,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
 
-            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
+            print(f"Request from {self.report_client(request.clientID)} to display on server.")
             print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for "
                 f"time {request.time} with {len(request.lines)} items.")
 
@@ -270,7 +270,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
 
-            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
+            print(f"Request from {self.report_client(request.clientID)} to display on server.")
             print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for "
                 f"time {request.time} with {len(request.vectors)} items.")
 
@@ -311,11 +311,11 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         return PROTOCOL.Empty()
 
     def focusEvent(self, request: PROTOCOL.SignedClickedIDs, context):
-        print(f"Client '{self.report_client(request.clientID)}' requests server to focus on IDs: {request.clientClickedIDs.objIDs}")
+        print(f"{self.report_client(request.clientID)} requests server to focus on IDs: {request.clientClickedIDs.objIDs}")
         return PROTOCOL.Empty()
 
     def selectEvent(self, request: PROTOCOL.SignedClickedIDs, context):
-        print(f"Client '{self.report_client(request.clientID)}' requests server to select IDs: {request.clientClickedIDs.objIDs}")
+        print(f"{self.report_client(request.clientID)} requests server to select IDs: {request.clientClickedIDs.objIDs}")
         return PROTOCOL.Empty()
 
 
