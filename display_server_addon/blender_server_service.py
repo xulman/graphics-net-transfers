@@ -17,6 +17,11 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
 
     def rebuild_reference_colored_nodes_collections(self):
+        if self.stop_and_wait_for_the_first_actual_use:
+            print("Skipping 'rebuild_reference_colored_nodes_collections()' until first real usage of this service...")
+            print("...or activate explicitly yourself via BlenderServerService's 'do_postponed_initialization()' method")
+            return
+
         sphereObj = bpy.data.objects.get(self.ref_shape_sphere_name)
         if sphereObj is None:
             print(f"Failed to find {self.ref_shape_sphere_name} to use as the reference shape for SPHERES.")
@@ -54,7 +59,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                     self.colored_ref_heads_col_name, vecHeadObj)
 
 
-    def __init__(self):
+    def __init__(self, init_everything_now:bool = False):
         # ----- VISIBILITY -----
         # default and immutable state of some reference objects
         self.hide_reference_position_objects = False
@@ -75,6 +80,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         # color palette
         self.palette = CP.ColorPalette()
+        self.stop_and_wait_for_the_first_actual_use = not init_everything_now
         self.rebuild_reference_colored_nodes_collections()
 
         # ----- COMMUNICATION -----
@@ -86,11 +92,27 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         # to signal Blender's callback is active
         self.request_callback_is_running = False
 
+    def do_postponed_initialization(self):
+        # essentially a collection of methods that should be used during init(),
+        # but need to be called only when the proper project is opened... and are
+        # thus postponed until first actual use/trigger of the gRPC (which should
+        # happen only when the correct project is opened);
+        #
+        # in general, the methods listed below should be guarding themselves
+        # with the self.stop_and_wait_for_the_first_actual_use()
+        self.stop_and_wait_for_the_first_actual_use = False
+        print("First real usage of this service detected... finalizing some late initializations...")
+
+        self.rebuild_reference_colored_nodes_collections()
+
 
     def submit_work_for_Blender_and_wait(self, code, data, reports_name: str):
         print(f"{reports_name} wants to talk to Blender...")
         self.request_lock.acquire()
         print(f"{reports_name} is now talking to Blender...")
+
+        if self.stop_and_wait_for_the_first_actual_use:
+            self.do_postponed_initialization()
 
         # prepare data and ask Blender to execute our code
         self.request_data = data
