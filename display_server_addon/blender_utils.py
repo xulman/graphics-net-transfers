@@ -106,16 +106,11 @@ def add_sphere_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_sha
     display_time = ref_point_for_bucket["display_time"]
 
     # setup Geometry Nodes
-    gn = shape_node.modifiers.new("Instancing from "+shape_ref_obj_ref.name,"NODES")
+    gn = shape_node.modifiers.new("Instancing using "+colored_shapes_col_ref.name,"NODES")
     gn.node_group = bpy.data.objects['gnHolder_Sphere'].modifiers['GeometryNodes'].node_group
     gn['Input_2'] = display_time
-    gn['Input_6'] = ref_point_for_bucket   # ref_position input
-    gn['Input_7'] = shape_ref_obj_ref      # ref_geometry input
-    gn['Input_8_attribute_name'] = "radius"
-    gn['Input_8_use_attribute'] = 1
-    gn['Input_9_attribute_name'] = "material_idx"
-    gn['Input_9_use_attribute'] = 1
-    gn['Input_10'] = color_palette_obj_ref # material_palette_node input
+    gn['Input_6'] = ref_point_for_bucket    # ref_position input
+    gn['Input_11'] = colored_shapes_col_ref # shape_and_colors_ref_sphere_objs
 
     return shape_node
 
@@ -132,20 +127,11 @@ def add_line_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_shape
     display_time = ref_point_for_bucket["display_time"]
 
     # setup Geometry Nodes
-    gn = shape_node.modifiers.new("Instancing from "+shape_ref_obj_ref.name,"NODES")
+    gn = shape_node.modifiers.new("Instancing using "+colored_shapes_col_ref.name,"NODES")
     gn.node_group = bpy.data.objects['gnHolder_Line'].modifiers['GeometryNodes'].node_group
     gn['Input_2'] = display_time
-    gn['Input_6'] = ref_point_for_bucket   # ref_position input
-    gn['Input_7'] = shape_ref_obj_ref      # ref_geometry input
-    gn['Input_8_attribute_name'] = "radius"
-    gn['Input_8_use_attribute'] = 1
-    gn['Input_9_attribute_name'] = "material_idx"
-    gn['Input_9_use_attribute'] = 1
-    gn['Input_10'] = color_palette_obj_ref # material_palette_node input
-    gn['Input_11_attribute_name'] = "end_pos"
-    gn['Input_11_use_attribute'] = 1
-    gn['Input_12_attribute_name'] = "start_pos"
-    gn['Input_12_use_attribute'] = 1
+    gn['Input_6'] = ref_point_for_bucket    # ref_position input
+    gn['Input_13'] = colored_shapes_col_ref # shape_and_colors_ref_line_objs
 
     return shape_node
 
@@ -162,21 +148,12 @@ def add_vector_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_sha
     display_time = ref_point_for_bucket["display_time"]
 
     # setup Geometry Nodes
-    gn = shape_node.modifiers.new("Instancing from "+shape_ref_obj_ref.name,"NODES")
+    gn = shape_node.modifiers.new("Instancing using "+colored_shaft_shapes_col_ref.name+" and "+colored_head_shapes_col_ref,"NODES")
     gn.node_group = bpy.data.objects['gnHolder_Vector'].modifiers['GeometryNodes'].node_group
     gn['Input_2'] = display_time
-    gn['Input_6'] = ref_point_for_bucket   # ref_position input
-    gn['Input_7'] = shape_ref_obj_ref      # ref_geometry input
-    gn['Input_13'] = shapeHead_ref_obj_ref # ref_geometry input
-    gn['Input_8_attribute_name'] = "radius"
-    gn['Input_8_use_attribute'] = 1
-    gn['Input_9_attribute_name'] = "material_idx"
-    gn['Input_9_use_attribute'] = 1
-    gn['Input_10'] = color_palette_obj_ref # material_palette_node input
-    gn['Input_11_attribute_name'] = "end_pos"
-    gn['Input_11_use_attribute'] = 1
-    gn['Input_12_attribute_name'] = "start_pos"
-    gn['Input_12_use_attribute'] = 1
+    gn['Input_6'] = ref_point_for_bucket          # ref_position input
+    gn['Input_14'] = colored_shaft_shapes_col_ref # shape_and_colors_ref_shaft_objs
+    gn['Input_15'] = colored_head_shapes_col_ref  # shape_and_colors_ref_head_objs
 
     return shape_node
 
