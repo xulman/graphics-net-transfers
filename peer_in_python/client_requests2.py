@@ -29,6 +29,8 @@ def main() -> None:
         msg.clientMessage.msg = f"I'm sending you {noOfSpheres} spheres"
         comm.showMessage(msg)
 
+        z_offset = 0.5
+
 
         buckets = list()
         for j in range(3):
@@ -43,7 +45,7 @@ def main() -> None:
                 sphParams = buckets_with_graphics_pb2.SphereParameters()
                 sphParams.centre.x = x+0.8
                 sphParams.centre.y = y
-                sphParams.centre.z = j
+                sphParams.centre.z = j + z_offset
                 sphParams.radius = 0.3
                 sphParams.colorIdx = i % 65
                 bucket.spheres.append(sphParams)
@@ -60,10 +62,10 @@ def main() -> None:
         vector = buckets_with_graphics_pb2.VectorParameters()
         vector.startPos.x = 10
         vector.startPos.y = 10
-        vector.startPos.z = 16
+        vector.startPos.z = 16 + z_offset
         vector.endPos.x = 15
         vector.endPos.y = 10
-        vector.endPos.z = 17
+        vector.endPos.z = 17 + z_offset
         vector.radius = 2
         vector.colorIdx = 0
         bucket.vectors.append(vector)
@@ -71,10 +73,10 @@ def main() -> None:
         vector = buckets_with_graphics_pb2.VectorParameters()
         vector.startPos.x = 10
         vector.startPos.y = 10
-        vector.startPos.z = 15
+        vector.startPos.z = 15 + z_offset
         vector.endPos.x = 15
         vector.endPos.y = 10
-        vector.endPos.z = 16
+        vector.endPos.z = 16 + z_offset
         vector.radius = 2
         vector.colorXRGB = 0x00FFFFFE
         bucket.vectors.append(vector)
@@ -82,10 +84,10 @@ def main() -> None:
         vector = buckets_with_graphics_pb2.VectorParameters()
         vector.startPos.x = 10
         vector.startPos.y = 15
-        vector.startPos.z = 15
+        vector.startPos.z = 15 + z_offset
         vector.endPos.x = 15
         vector.endPos.y = 15
-        vector.endPos.z = 16
+        vector.endPos.z = 16 + z_offset
         vector.radius = 2
         vector.colorIdx = 1
         bucket.vectors.append(vector)
@@ -93,10 +95,10 @@ def main() -> None:
         vector = buckets_with_graphics_pb2.VectorParameters()
         vector.startPos.x = 10
         vector.startPos.y = 15
-        vector.startPos.z = 16
+        vector.startPos.z = 16 + z_offset
         vector.endPos.x = 15
         vector.endPos.y = 15
-        vector.endPos.z = 17
+        vector.endPos.z = 17 + z_offset
         vector.radius = 2
         vector.colorXRGB = 0x00FF0000
         bucket.vectors.append(vector)
@@ -115,10 +117,10 @@ def main() -> None:
         line = buckets_with_graphics_pb2.LineParameters()
         line.startPos.x = 10
         line.startPos.y = 10
-        line.startPos.z = 16
+        line.startPos.z = 16 + z_offset
         line.endPos.x = 15
         line.endPos.y = 10
-        line.endPos.z = 17
+        line.endPos.z = 17 + z_offset
         line.radius = 2
         line.colorIdx = 0
         bucket.lines.append(line)
@@ -126,10 +128,10 @@ def main() -> None:
         line = buckets_with_graphics_pb2.LineParameters()
         line.startPos.x = 10
         line.startPos.y = 10
-        line.startPos.z = 15
+        line.startPos.z = 15 + z_offset
         line.endPos.x = 15
         line.endPos.y = 10
-        line.endPos.z = 16
+        line.endPos.z = 16 + z_offset
         line.radius = 2
         line.colorXRGB = 0x00FFFFFE
         bucket.lines.append(line)
@@ -137,10 +139,10 @@ def main() -> None:
         line = buckets_with_graphics_pb2.LineParameters()
         line.startPos.x = 10
         line.startPos.y = 15
-        line.startPos.z = 15
+        line.startPos.z = 15 + z_offset
         line.endPos.x = 15
         line.endPos.y = 15
-        line.endPos.z = 16
+        line.endPos.z = 16 + z_offset
         line.radius = 2
         line.colorIdx = 1
         bucket.lines.append(line)
@@ -148,10 +150,10 @@ def main() -> None:
         line = buckets_with_graphics_pb2.LineParameters()
         line.startPos.x = 10
         line.startPos.y = 15
-        line.startPos.z = 16
+        line.startPos.z = 16 + z_offset
         line.endPos.x = 15
         line.endPos.y = 15
-        line.endPos.z = 17
+        line.endPos.z = 17 + z_offset
         line.radius = 2
         line.colorXRGB = 0x00FF0000
         bucket.lines.append(line)
