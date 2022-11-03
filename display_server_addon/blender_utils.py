@@ -46,7 +46,8 @@ def create_new_collection_for_source(source_name:str, source_URL:str, hide_posit
     new_src_col.objects.link(ref_obj)
     #
     ref_obj.name = "Source reference position for "+source_name
-    ref_obj["source_URL"] = source_URL
+    ref_obj["from_client"] = source_name
+    ref_obj["feedback_URL"] = source_URL
     ref_obj.hide_viewport = hide_position_node
 
     return new_src_col
