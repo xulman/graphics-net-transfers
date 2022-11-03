@@ -29,6 +29,7 @@ def main() -> None:
         msg.clientMessage.msg = f"I'm sending you {noOfSpheres} spheres"
         comm.showMessage(msg)
 
+
         buckets = list()
         for j in range(3):
             bucket = buckets_with_graphics_pb2.BucketOfSpheres()
@@ -49,11 +50,67 @@ def main() -> None:
             buckets.append(bucket)
         comm.addSpheres(iter(buckets))
 
-        bucket = buckets_with_graphics_pb2.BucketOfLines()
+
+        bucket = buckets_with_graphics_pb2.BucketOfVectors()
         bucket.clientID.clientName = clientName
         bucket.bucketID = 128
-        bucket.label = "testing lines"
+        bucket.label = "testing vectors"
         bucket.time = 18
+        #
+        vector = buckets_with_graphics_pb2.VectorParameters()
+        vector.startPos.x = 10
+        vector.startPos.y = 10
+        vector.startPos.z = 16
+        vector.endPos.x = 15
+        vector.endPos.y = 10
+        vector.endPos.z = 17
+        vector.radius = 2
+        vector.colorIdx = 0
+        bucket.vectors.append(vector)
+        #
+        vector = buckets_with_graphics_pb2.VectorParameters()
+        vector.startPos.x = 10
+        vector.startPos.y = 10
+        vector.startPos.z = 15
+        vector.endPos.x = 15
+        vector.endPos.y = 10
+        vector.endPos.z = 16
+        vector.radius = 2
+        vector.colorXRGB = 0x00FFFFFE
+        bucket.vectors.append(vector)
+        #
+        vector = buckets_with_graphics_pb2.VectorParameters()
+        vector.startPos.x = 10
+        vector.startPos.y = 15
+        vector.startPos.z = 15
+        vector.endPos.x = 15
+        vector.endPos.y = 15
+        vector.endPos.z = 16
+        vector.radius = 2
+        vector.colorIdx = 1
+        bucket.vectors.append(vector)
+        #
+        vector = buckets_with_graphics_pb2.VectorParameters()
+        vector.startPos.x = 10
+        vector.startPos.y = 15
+        vector.startPos.z = 16
+        vector.endPos.x = 15
+        vector.endPos.y = 15
+        vector.endPos.z = 17
+        vector.radius = 2
+        vector.colorXRGB = 0x00FF0000
+        bucket.vectors.append(vector)
+        #
+        stream_of_lines = list()
+        stream_of_lines.append(bucket)
+        comm.addVectors(iter(stream_of_lines))
+
+
+        bucket = buckets_with_graphics_pb2.BucketOfLines()
+        bucket.clientID.clientName = clientName
+        bucket.bucketID = 129
+        bucket.label = "testing lines"
+        bucket.time = 19
         #
         line = buckets_with_graphics_pb2.LineParameters()
         line.startPos.x = 10
@@ -101,7 +158,7 @@ def main() -> None:
         #
         stream_of_lines = list()
         stream_of_lines.append(bucket)
-        comm.addVectors(iter(stream_of_lines))
+        comm.addLines(iter(stream_of_lines))
 
     except RpcError as e:
         print("Some connection error, details follow:")

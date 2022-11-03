@@ -62,7 +62,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
     def __init__(self, init_everything_now:bool = False):
         # ----- VISIBILITY -----
         # default and immutable state of some reference objects
-        self.hide_reference_position_objects = False
+        self.hide_reference_position_objects = True
         self.hide_color_palette_obj = True
         self.report_individual_incoming_items = False
 
