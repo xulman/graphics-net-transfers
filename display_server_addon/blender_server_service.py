@@ -129,7 +129,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.request_data = data
         self.request_callback_is_running = True
         self.request_callback_routine = code
-        bpy.app.timers.register(self.runs_when_blender_allows, first_interval=0.01)
+        bpy.app.timers.register(self.runs_when_blender_allows, first_interval=0.003)
 
         # wait for our code to finish
         # NB: flag is cleared in the signalling method done_working_with_Blender()
