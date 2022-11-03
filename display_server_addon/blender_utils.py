@@ -17,6 +17,22 @@ def get_mainScene_collection():
     return bpy.data.scenes[0].collection
 
 
+def get_referenceShapes_collection():
+    return bpy.data.collections.get('Reference shapes')
+
+def get_new_ref_position_cube_obj():
+    ref_shapes_col = get_referenceShapes_collection()
+    cube_obj = ref_shapes_col.objects.get("refCube")
+
+    if cube_obj is None:
+        bpy.ops.object.empty_add(type='CUBE')
+        cube_obj = bpy.context.object
+        cube_obj.name = "refCube"
+        move_obj_into_this_collection(cube_obj, ref_shapes_col)
+
+    return cube_obj.copy()
+
+
 def create_new_collection_for_source(source_name:str, source_URL:str, hide_position_node = False):
     # create a new collection
     new_src_col = bpy.data.collections.new(source_name)
@@ -26,10 +42,9 @@ def create_new_collection_for_source(source_name:str, source_URL:str, hide_posit
     main_col.children.link(new_src_col)
 
     # introduce its reference point
-    bpy.ops.object.empty_add(type='CUBE')
-    ref_obj = bpy.context.object
+    ref_obj = get_new_ref_position_cube_obj()
+    new_src_col.objects.link(ref_obj)
     #
-    move_obj_into_this_collection(ref_obj, new_src_col)
     ref_obj.name = "Source reference position for "+source_name
     ref_obj["source_URL"] = source_URL
     ref_obj.hide_viewport = hide_position_node
@@ -49,10 +64,9 @@ def create_new_bucket(bucket_name:str, display_time:int, source_col_ref, hide_po
     source_col_ref.children.link(new_col)
 
     # introduce its reference point
-    bpy.ops.object.empty_add(type='CUBE') # TODO
-    ref_obj = bpy.context.object
+    ref_obj = get_new_ref_position_cube_obj()
+    new_col.objects.link(ref_obj)
     #
-    move_obj_into_this_collection(ref_obj, new_col)
     ref_obj.name = "Bucket reference position for "+bucket_name
     ref_obj.parent = source_col_ref.objects[0]
     ref_obj["display_time"] = display_time
@@ -68,18 +82,26 @@ def get_bucket_in_this_source_collection(bucket_name:str, source_col_ref):
 def setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref):
     # creates new plane which unf. comes with some default shape/content
     # this is the Table from the Manifesto
-    bpy.ops.mesh.primitive_plane_add()
-    shape_node = bpy.context.object
+    ref_shapes_col = get_referenceShapes_collection()
+    mesh_obj = ref_shapes_col.objects.get("refDataContainer")
 
-    move_obj_into_this_collection(shape_node, bucket_col_ref)
-    mesh = shape_node.data
+    if mesh_obj is None:
+        bpy.ops.mesh.primitive_plane_add()
+        #
+        # remove the original content
+        bpy.ops.object.editmode_toggle()
+        bpy.ops.mesh.delete()
+        bpy.ops.object.editmode_toggle()
+        #
+        mesh_obj = bpy.context.object
+        mesh_obj.name = "refDataContainer"
+        move_obj_into_this_collection(mesh_obj, ref_shapes_col)
+
+    shape_node = mesh_obj.copy()
+    shape_node.data = mesh_obj.data.copy()
     shape_node.name = node_name
-    mesh.name = node_name
-
-    # remove the original content
-    bpy.ops.object.editmode_toggle()
-    bpy.ops.mesh.delete()
-    bpy.ops.object.editmode_toggle()
+    shape_node.data.name = node_name
+    bucket_col_ref.objects.link(shape_node)
 
     return shape_node
 
