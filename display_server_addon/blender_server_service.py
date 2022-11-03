@@ -65,6 +65,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.hide_reference_position_objects = True
         self.hide_color_palette_obj = True
         self.report_individual_incoming_items = False
+        self.report_also_repeating_debug_messages = False
 
         # shape reference objects
         self.ref_shape_sphere_name = "refSphere"
@@ -118,9 +119,11 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.request_callback_routine()
 
     def submit_work_for_Blender_and_wait(self, code, data, reports_name: str):
-        print(f"{reports_name} wants to talk to Blender...")
+        if self.report_also_repeating_debug_messages:
+            print(f"{reports_name} wants to talk to Blender...")
         self.request_lock.acquire()
-        print(f"{reports_name} is now talking to Blender...")
+        if self.report_also_repeating_debug_messages:
+            print(f"{reports_name} is now talking to Blender...")
 
         # prepare data and ask Blender to execute our code
         self.request_data = data
@@ -133,7 +136,8 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         while self.request_callback_is_running:
             sleep(0.2)
 
-        print(f"{reports_name} just finished talking to Blender...\n")
+        if self.report_also_repeating_debug_messages:
+            print(f"{reports_name} just finished talking to Blender...\n")
         self.request_lock.release()
 
     def done_working_with_Blender(self):
@@ -185,9 +189,10 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
 
-            print(f"Request from {self.report_client(request.clientID)} to display on server.")
-            print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for "
-                f"time {request.time} with {len(request.spheres)} items.")
+            if self.report_also_repeating_debug_messages:
+                print(f"Request from {self.report_client(request.clientID)} to display on server.")
+                print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for "
+                    f"time {request.time} with {len(request.spheres)} items.")
 
             bucketName = f"TP={request.time}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
@@ -233,9 +238,10 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
 
-            print(f"Request from {self.report_client(request.clientID)} to display on server.")
-            print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for "
-                f"time {request.time} with {len(request.lines)} items.")
+            if self.report_also_repeating_debug_messages:
+                print(f"Request from {self.report_client(request.clientID)} to display on server.")
+                print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for "
+                    f"time {request.time} with {len(request.lines)} items.")
 
             bucketName = f"TP={request.time}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
@@ -283,9 +289,10 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
 
-            print(f"Request from {self.report_client(request.clientID)} to display on server.")
-            print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for "
-                f"time {request.time} with {len(request.vectors)} items.")
+            if self.report_also_repeating_debug_messages:
+                print(f"Request from {self.report_client(request.clientID)} to display on server.")
+                print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for "
+                    f"time {request.time} with {len(request.vectors)} items.")
 
             bucketName = f"TP={request.time}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
