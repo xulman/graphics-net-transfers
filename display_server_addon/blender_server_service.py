@@ -160,6 +160,8 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         if srcLevel is None:
             srcLevel = BU.create_new_collection_for_source(clientName,retURL, hide_position_node = self.hide_reference_position_objects)
 
+        self.known_clients_retUrls[clientName] = retURL
+
         self.done_working_with_Blender()
 
 
@@ -195,6 +197,9 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             shapeRef = BU.add_sphere_shape_into_that_bucket(request.label, bucketLevelCol, self.colored_ref_spheres_col)
             shapeRef["ID"] = request.bucketID
             shapeRef["display_time"] = request.time
+            clientName = request.clientID.clientName
+            shapeRef["from_client"] = clientName
+            shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
             data = shapeRef.data
             data.vertices.add(len(request.spheres))
@@ -239,6 +244,9 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             shapeRef = BU.add_line_shape_into_that_bucket(request.label, bucketLevelCol, self.colored_ref_lines_col)
             shapeRef["ID"] = request.bucketID
             shapeRef["display_time"] = request.time
+            clientName = request.clientID.clientName
+            shapeRef["from_client"] = clientName
+            shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
             data = shapeRef.data
             data.vertices.add(len(request.lines))
@@ -285,6 +293,9 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             shapeRef = BU.add_vector_shape_into_that_bucket(request.label, bucketLevelCol, self.colored_ref_shafts_col,self.colored_ref_heads_col)
             shapeRef["ID"] = request.bucketID
             shapeRef["display_time"] = request.time
+            clientName = request.clientID.clientName
+            shapeRef["from_client"] = clientName
+            shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
             data = shapeRef.data
             data.vertices.add(len(request.vectors))
