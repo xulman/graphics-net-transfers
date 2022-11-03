@@ -93,6 +93,9 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.request_callback_is_running = False
         self.request_callback_routine = None
 
+        self.known_clients_retUrls = dict()
+        self.unknown_client_retUrl = "no callback"
+
 
     def do_postponed_initialization(self):
         # essentially a collection of methods that should be used during init(),
@@ -148,7 +151,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         retURL = request.returnURL
         if retURL is None or retURL == "":
             print("  -> with NO callback")
-            retURL = "no callback"
+            retURL = self.unknown_client_retUrl
         else:
             print(f"  -> with callback to >>{request.returnURL}<<")
 
@@ -166,7 +169,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         if srcLevel is None:
             srcLevel = BU.get_collection_for_source("anonymous")
             if srcLevel is None:
-                srcLevel = BU.create_new_collection_for_source("anonymous", "no callback", hide_position_node = True)
+                srcLevel = BU.create_new_collection_for_source("anonymous", self.unknown_client_retUrl, hide_position_node = True)
         return srcLevel
 
 
