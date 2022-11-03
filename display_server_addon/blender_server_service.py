@@ -202,6 +202,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
             data = shapeRef.data
+            i0 = len(data.vertices)
             data.vertices.add(len(request.spheres))
             for i,sphere in enumerate(request.spheres):
                 colorIdx = 0
@@ -213,11 +214,11 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                 if self.report_individual_incoming_items:
                     print(f"Sphere at {self.report_vector(sphere.centre)}, radius={sphere.radius}, colorIdx={colorIdx}")
 
-                data.vertices[i].co.x = sphere.centre.x
-                data.vertices[i].co.y = sphere.centre.y
-                data.vertices[i].co.z = sphere.centre.z
-                data.attributes['radius'].data[i].value = sphere.radius
-                data.attributes['material_idx'].data[i].value = colorIdx
+                data.vertices[i+i0].co.x = sphere.centre.x
+                data.vertices[i+i0].co.y = sphere.centre.y
+                data.vertices[i+i0].co.z = sphere.centre.z
+                data.attributes['radius'].data[i+i0].value = sphere.radius
+                data.attributes['material_idx'].data[i+i0].value = colorIdx
 
         self.done_working_with_Blender()
 
@@ -249,6 +250,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
             data = shapeRef.data
+            i0 = len(data.vertices)
             data.vertices.add(len(request.lines))
             for i,line in enumerate(request.lines):
                 colorIdx = 0
@@ -260,13 +262,13 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                 if self.report_individual_incoming_items:
                     print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}, radius={line.radius}, colorIdx={colorIdx}")
 
-                data.vertices[i].co.x = line.startPos.x
-                data.vertices[i].co.y = line.startPos.y
-                data.vertices[i].co.z = line.startPos.z
-                data.attributes['start_pos'].data[i].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
-                data.attributes['end_pos'].data[i].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
-                data.attributes['radius'].data[i].value = line.radius
-                data.attributes['material_idx'].data[i].value = colorIdx
+                data.vertices[i+i0].co.x = line.startPos.x
+                data.vertices[i+i0].co.y = line.startPos.y
+                data.vertices[i+i0].co.z = line.startPos.z
+                data.attributes['start_pos'].data[i+i0].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
+                data.attributes['end_pos'].data[i+i0].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
+                data.attributes['radius'].data[i+i0].value = line.radius
+                data.attributes['material_idx'].data[i+i0].value = colorIdx
 
         self.done_working_with_Blender()
 
@@ -298,6 +300,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
             data = shapeRef.data
+            i0 = len(data.vertices)
             data.vertices.add(len(request.vectors))
             for i,vec in enumerate(request.vectors):
                 colorIdx = 0
@@ -309,13 +312,13 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                 if self.report_individual_incoming_items:
                     print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}, radius={vec.radius}, colorIdx={colorIdx}")
 
-                data.vertices[i].co.x = vec.startPos.x
-                data.vertices[i].co.y = vec.startPos.y
-                data.vertices[i].co.z = vec.startPos.z
-                data.attributes['start_pos'].data[i].vector = [vec.startPos.x,vec.startPos.y,vec.startPos.z]
-                data.attributes['end_pos'].data[i].vector = [vec.endPos.x,vec.endPos.y,vec.endPos.z]
-                data.attributes['radius'].data[i].value = vec.radius
-                data.attributes['material_idx'].data[i].value = colorIdx
+                data.vertices[i+i0].co.x = vec.startPos.x
+                data.vertices[i+i0].co.y = vec.startPos.y
+                data.vertices[i+i0].co.z = vec.startPos.z
+                data.attributes['start_pos'].data[i+i0].vector = [vec.startPos.x,vec.startPos.y,vec.startPos.z]
+                data.attributes['end_pos'].data[i+i0].vector = [vec.endPos.x,vec.endPos.y,vec.endPos.z]
+                data.attributes['radius'].data[i+i0].value = vec.radius
+                data.attributes['material_idx'].data[i+i0].value = colorIdx
 
         self.done_working_with_Blender()
 
