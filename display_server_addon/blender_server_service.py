@@ -65,7 +65,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.hide_reference_position_objects = True
         self.hide_color_palette_obj = True
         self.report_individual_incoming_items = False
-        self.report_also_repeating_debug_messages = False
+        self.report_also_repeating_debug_messages = True
 
         # shape reference objects
         self.ref_shape_sphere_name = "refSphere"
