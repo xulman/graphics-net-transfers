@@ -45,7 +45,7 @@ def create_new_collection_for_source(source_name:str, source_URL:str, hide_posit
     ref_obj = get_new_ref_position_cube_obj()
     new_src_col.objects.link(ref_obj)
     #
-    ref_obj.name = "Source reference position for "+source_name
+    ref_obj.name = "COORDINATES FRAME for "+source_name
     ref_obj["from_client"] = source_name
     ref_obj["feedback_URL"] = source_URL
     ref_obj.hide_viewport = hide_position_node
@@ -68,7 +68,7 @@ def create_new_bucket(bucket_name:str, display_time:int, source_col_ref, hide_po
     ref_obj = get_new_ref_position_cube_obj()
     new_col.objects.link(ref_obj)
     #
-    ref_obj.name = "Bucket reference position for "+bucket_name
+    ref_obj.name = "COORDINATES FRAME @ "+bucket_name
     ref_obj.parent = source_col_ref.objects[0]
     ref_obj["display_time"] = display_time
     ref_obj.hide_viewport = hide_position_node

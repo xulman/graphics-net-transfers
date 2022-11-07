@@ -194,12 +194,13 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                 print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for "
                     f"time {request.time} with {len(request.spheres)} items.")
 
-            bucketName = f"TP={request.time}"
+            bucketName = f"TP={request.time} from {request.clientID.clientName}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
-            shapeRef = BU.add_sphere_shape_into_that_bucket(request.label, bucketLevelCol, self.colored_ref_spheres_col)
+            shapeName = f"{request.label} @ {bucketName}"
+            shapeRef = BU.add_sphere_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_spheres_col)
             shapeRef["ID"] = request.bucketID
             shapeRef["display_time"] = request.time
             clientName = request.clientID.clientName
@@ -243,12 +244,13 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                 print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for "
                     f"time {request.time} with {len(request.lines)} items.")
 
-            bucketName = f"TP={request.time}"
+            bucketName = f"TP={request.time} from {request.clientID.clientName}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
-            shapeRef = BU.add_line_shape_into_that_bucket(request.label, bucketLevelCol, self.colored_ref_lines_col)
+            shapeName = f"{request.label} @ {bucketName}"
+            shapeRef = BU.add_line_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_lines_col)
             shapeRef["ID"] = request.bucketID
             shapeRef["display_time"] = request.time
             clientName = request.clientID.clientName
@@ -294,12 +296,13 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                 print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for "
                     f"time {request.time} with {len(request.vectors)} items.")
 
-            bucketName = f"TP={request.time}"
+            bucketName = f"TP={request.time} from {request.clientID.clientName}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
-            shapeRef = BU.add_vector_shape_into_that_bucket(request.label, bucketLevelCol, self.colored_ref_shafts_col,self.colored_ref_heads_col)
+            shapeName = f"{request.label} @ {bucketName}"
+            shapeRef = BU.add_vector_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_shafts_col,self.colored_ref_heads_col)
             shapeRef["ID"] = request.bucketID
             shapeRef["display_time"] = request.time
             clientName = request.clientID.clientName
