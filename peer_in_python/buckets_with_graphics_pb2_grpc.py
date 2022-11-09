@@ -21,12 +21,12 @@ class ClientToServerStub(object):
                 )
         self.addGraphics = channel.stream_unary(
                 '/transfers_graphics_protocol.ClientToServer/addGraphics',
-                request_serializer=buckets__with__graphics__pb2.CollectionOfGraphics.SerializeToString,
+                request_serializer=buckets__with__graphics__pb2.BatchOfGraphics.SerializeToString,
                 response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
                 )
         self.replaceGraphics = channel.stream_unary(
                 '/transfers_graphics_protocol.ClientToServer/replaceGraphics',
-                request_serializer=buckets__with__graphics__pb2.CollectionOfGraphics.SerializeToString,
+                request_serializer=buckets__with__graphics__pb2.BatchOfGraphics.SerializeToString,
                 response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
                 )
         self.showMessage = channel.unary_unary(
@@ -132,12 +132,12 @@ def add_ClientToServerServicer_to_server(servicer, server):
             ),
             'addGraphics': grpc.stream_unary_rpc_method_handler(
                     servicer.addGraphics,
-                    request_deserializer=buckets__with__graphics__pb2.CollectionOfGraphics.FromString,
+                    request_deserializer=buckets__with__graphics__pb2.BatchOfGraphics.FromString,
                     response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
             ),
             'replaceGraphics': grpc.stream_unary_rpc_method_handler(
                     servicer.replaceGraphics,
-                    request_deserializer=buckets__with__graphics__pb2.CollectionOfGraphics.FromString,
+                    request_deserializer=buckets__with__graphics__pb2.BatchOfGraphics.FromString,
                     response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
             ),
             'showMessage': grpc.unary_unary_rpc_method_handler(
@@ -204,7 +204,7 @@ class ClientToServer(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.ClientToServer/addGraphics',
-            buckets__with__graphics__pb2.CollectionOfGraphics.SerializeToString,
+            buckets__with__graphics__pb2.BatchOfGraphics.SerializeToString,
             buckets__with__graphics__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -221,7 +221,7 @@ class ClientToServer(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.ClientToServer/replaceGraphics',
-            buckets__with__graphics__pb2.CollectionOfGraphics.SerializeToString,
+            buckets__with__graphics__pb2.BatchOfGraphics.SerializeToString,
             buckets__with__graphics__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
