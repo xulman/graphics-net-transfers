@@ -24,8 +24,8 @@ service ClientToServer {
 	 * within a bucket, only an ID of the bucket is transfered and no IDs
 	 * for the individual instances
 	 */
-	rpc     addGraphics (stream CollectionOfGraphics) returns (Empty) {}
-	rpc replaceGraphics (stream CollectionOfGraphics) returns (Empty) {}
+	rpc     addGraphics (stream BatchOfGraphics) returns (Empty) {}
+	rpc replaceGraphics (stream BatchOfGraphics) returns (Empty) {}
 
 	rpc showMessage (SignedTextMessage) returns (Empty) {}
 
@@ -70,30 +70,31 @@ message ClientHello {
 
 
 /**
- * Everything in the collection is treated as one non-dividable entity.
+ * Everything in the batch is treated as one non-dividable entity.
  * The graphics elements, which is the content of this message, is
  * indistinguishable among themselves, and it makes no sense to assign them
  * anything specific to them, anything individual. As a consequence, the
- * source clientID, collectionID is given for the full load and is
- * understood to be valid for its full content, for graphics element inside.
+ * source clientID, dataName, dataID etc. is given for the full batch and is
+ * understood to be valid for its full content, for all graphics element inside.
  *
  * In Blender, for example, it appears as one Blender object (listed as
  * one element in the Outliner panel) that displays its content (which
  * is the content of this message) using the instancing mechanism.
  */
-message CollectionOfGraphics {
+message BatchOfGraphics {
 	ClientIdentification clientID = 1;
-	uint64 collectionID = 2; // ID in the realm of the source
-	string label = 3;        // Label/name of this collection
+	string collectionName  = 2;   // Label/name of this collection
+	string dataName        = 5;   // Label/name of this data group
+	uint64 dataID          = 6;   // ID in the realm of the source
 	//select color palette
-	repeated Graphics data = 5;
+	repeated Graphics data = 9;
 }
 
 message Graphics {
 	oneof shape {
-		SphereParameters spheres = 1;
-		LineParameters lines     = 2;
-		VectorParameters vectors = 3;
+		SphereParameters sphere = 1;
+		LineParameters line     = 2;
+		VectorParameters vector = 3;
 	}
 }
 
