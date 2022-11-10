@@ -103,11 +103,7 @@ class ColorPalette:
         bpy.ops.mesh.primitive_grid_add(x_subdivisions=1, y_subdivisions=1)
         ref_obj = bpy.context.object
         ref_obj.name = new_node_name
-        # remove the original content, leave only one vertex
-        # (which is not enough to create a face and thus nothing can ever be really displayed)
-        bpy.ops.object.editmode_toggle()
-        bpy.ops.mesh.delete()
-        bpy.ops.object.editmode_toggle()
+        ref_obj.data.clear_geometry() # removes the original content
         ref_obj.data.vertices.add(1)
 
         for [n,r,g,b] in self.palette.values():

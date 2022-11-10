@@ -87,13 +87,8 @@ def setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref):
 
     if mesh_obj is None:
         bpy.ops.mesh.primitive_plane_add()
-        #
-        # remove the original content
-        bpy.ops.object.editmode_toggle()
-        bpy.ops.mesh.delete()
-        bpy.ops.object.editmode_toggle()
-        #
         mesh_obj = bpy.context.object
+        mesh_obj.data.clear_geometry() # removes the original content
         mesh_obj.name = "refDataContainer"
         move_obj_into_this_collection(mesh_obj, ref_shapes_col)
 
