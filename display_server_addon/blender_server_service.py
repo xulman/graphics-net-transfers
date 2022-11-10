@@ -179,158 +179,109 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         return srcLevel
 
 
-    def addSpheres(self, request_iterator: PROTOCOL.BucketOfSpheres, context):
-        self.submit_work_for_Blender_and_wait(self.addSpheres_worker, request_iterator, "addSpheres()")
+    def addGraphics(self, request_iterator: PROTOCOL.BatchOfGraphics, context):
+        self.submit_work_for_Blender_and_wait(self.addGraphics_worker, request_iterator, "addGraphics()")
         return PROTOCOL.Empty()
 
-    def addSpheres_worker(self):
-        request_iterator: PROTOCOL.BucketOfSpheres = self.request_data
+    def addGraphics_worker(self):
+        request_iterator: PROTOCOL.BatchOfGraphics = self.request_data
 
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
 
             if self.report_also_repeating_debug_messages:
                 print(f"Request from {self.report_client(request.clientID)} to display on server.")
-                print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for "
-                    f"time {request.time} with {len(request.spheres)} items.")
+                print(f"Server creates object '{request.dataName}' (ID: {request.dataID}) "
+                    f"with {len(request.data)} items into collection {request.collectionName}.")
 
-            bucketName = f"TP={request.time} from {request.clientID.clientName}"
+            clientName = request.clientID.clientName
+            bucketName = f"{request.collectionName} from {clientName}"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
-                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
+                bucketLevelCol = BU.create_new_bucket(bucketName, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
-            shapeName = f"{request.label} @ {bucketName}"
-            shapeRef = BU.add_sphere_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_spheres_col)
-            shapeRef["ID"] = request.bucketID
-            shapeRef["display_time"] = request.time
-            clientName = request.clientID.clientName
+            shapeName = f"{request.dataName} @ {bucketName}"
+            shapeRef = BU.add_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_shapes_col)
+            shapeRef["ID"] = request.dataID
             shapeRef["from_client"] = clientName
             shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
-            data = shapeRef.data
-            i0 = len(data.vertices)
-            data.vertices.add(len(request.spheres))
-            for i,sphere in enumerate(request.spheres):
-                colorIdx = 0
-                if sphere.HasField('colorIdx'):
-                    colorIdx = sphere.colorIdx
-                else:
-                    colorIdx = self.palette.get_index_for_XRGB(sphere.colorXRGB)
+            instancing_data = shapeRef.data
+            if add_from_beginning:
+                instancing_data.clear_geometry()
 
-                if self.report_individual_incoming_items:
-                    print(f"Sphere at {self.report_vector(sphere.centre)}, radius={sphere.radius}, colorIdx={colorIdx}")
+            i0 = len(instancing_data.vertices) # the i0+ construct below turns adding into appending
+            instancing_data.vertices.add(len(request.data))
 
-                data.vertices[i+i0].co.x = sphere.centre.x
-                data.vertices[i+i0].co.y = sphere.centre.y
-                data.vertices[i+i0].co.z = sphere.centre.z
-                data.attributes['radius'].data[i+i0].value = sphere.radius
-                data.attributes['material_idx'].data[i+i0].value = colorIdx
+            for i,shape in enumerate(request.data):
+                if shape.HasField('sphere'):
+                    self.addSphere(instancing_data,i0+i, shape.sphere)
+                elif shape.HasField('line'):
+                    self.addLine(instancing_data,i0+i, shape.line)
+                elif shape.HasField('vector'):
+                    self.addVector(instancing_data,i0+i, shape.vector)
 
         self.done_working_with_Blender()
 
 
-    def addLines(self, request_iterator: PROTOCOL.BucketOfLines, context):
-        self.submit_work_for_Blender_and_wait(self.addLines_worker, request_iterator, "addLines()")
-        return PROTOCOL.Empty()
+    def addSphere(self, instancing_data, index, sphere:PROTOCOL.SphereParameters):
+        colorIdx = self.getColorIdx(sphere)
 
-    def addLines_worker(self):
-        request_iterator = self.request_data
+        if self.report_individual_incoming_items:
+            print(f"Sphere at {self.report_vector(sphere.centre)}"
+                +f"@{sphere.time}, radius={sphere.radius}, colorIdx={colorIdx}")
 
-        for request in request_iterator:
-            srcLevelCol = self.get_client_collection(request.clientID)
-
-            if self.report_also_repeating_debug_messages:
-                print(f"Request from {self.report_client(request.clientID)} to display on server.")
-                print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for "
-                    f"time {request.time} with {len(request.lines)} items.")
-
-            bucketName = f"TP={request.time} from {request.clientID.clientName}"
-            bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
-            if bucketLevelCol is None:
-                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
-
-            shapeName = f"{request.label} @ {bucketName}"
-            shapeRef = BU.add_line_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_lines_col)
-            shapeRef["ID"] = request.bucketID
-            shapeRef["display_time"] = request.time
-            clientName = request.clientID.clientName
-            shapeRef["from_client"] = clientName
-            shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
-
-            data = shapeRef.data
-            i0 = len(data.vertices)
-            data.vertices.add(len(request.lines))
-            for i,line in enumerate(request.lines):
-                colorIdx = 0
-                if line.HasField('colorIdx'):
-                    colorIdx = line.colorIdx
-                else:
-                    colorIdx = self.palette.get_index_for_XRGB(line.colorXRGB)
-
-                if self.report_individual_incoming_items:
-                    print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}, radius={line.radius}, colorIdx={colorIdx}")
-
-                data.vertices[i+i0].co.x = line.startPos.x
-                data.vertices[i+i0].co.y = line.startPos.y
-                data.vertices[i+i0].co.z = line.startPos.z
-                data.attributes['start_pos'].data[i+i0].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
-                data.attributes['end_pos'].data[i+i0].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
-                data.attributes['radius'].data[i+i0].value = line.radius
-                data.attributes['material_idx'].data[i+i0].value = colorIdx
-
-        self.done_working_with_Blender()
+        instancing_data.vertices[index].co.x = sphere.centre.x
+        instancing_data.vertices[index].co.y = sphere.centre.y
+        instancing_data.vertices[index].co.z = sphere.centre.z
+        instancing_data.attributes['start_pos'].data[index].vector = [0,0,0]
+        instancing_data.attributes['end_pos'].data[index].vector = [0,1,0]
+        instancing_data.attributes['time'].data[index].value = sphere.time
+        instancing_data.attributes['radius'].data[index].value = sphere.radius
+        instancing_data.attributes['material_idx'].data[index].value = colorIdx
 
 
-    def addVectors(self, request_iterator: PROTOCOL.BucketOfVectors, context):
-        self.submit_work_for_Blender_and_wait(self.addVectors_worker, request_iterator, "addVectors()")
-        return PROTOCOL.Empty()
+    def addLine(self, instancing_data, index, line:PROTOCOL.LineParameters):
+        colorIdx = self.getColorIdx(line)
 
-    def addVectors_worker(self):
-        request_iterator = self.request_data
+        if self.report_individual_incoming_items:
+            print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}"
+                +f"@{line.time}, radius={line.radius}, colorIdx={colorIdx}")
 
-        for request in request_iterator:
-            srcLevelCol = self.get_client_collection(request.clientID)
+        instancing_data.vertices[index].co.x = line.startPos.x
+        instancing_data.vertices[index].co.y = line.startPos.y
+        instancing_data.vertices[index].co.z = line.startPos.z
+        instancing_data.attributes['start_pos'].data[index].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
+        instancing_data.attributes['end_pos'].data[index].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
+        instancing_data.attributes['time'].data[index].value = line.time
+        instancing_data.attributes['radius'].data[index].value = line.radius
+        instancing_data.attributes['material_idx'].data[index].value = colorIdx # TODO offset to lines!
 
-            if self.report_also_repeating_debug_messages:
-                print(f"Request from {self.report_client(request.clientID)} to display on server.")
-                print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for "
-                    f"time {request.time} with {len(request.vectors)} items.")
 
-            bucketName = f"TP={request.time} from {request.clientID.clientName}"
-            bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
-            if bucketLevelCol is None:
-                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
+    def addVector(self, instancing_data, index, vector:PROTOCOL.VectorParameters):
+        colorIdx = self.getColorIdx(vector)
 
-            shapeName = f"{request.label} @ {bucketName}"
-            shapeRef = BU.add_vector_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_shafts_col,self.colored_ref_heads_col)
-            shapeRef["ID"] = request.bucketID
-            shapeRef["display_time"] = request.time
-            clientName = request.clientID.clientName
-            shapeRef["from_client"] = clientName
-            shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
+        if self.report_individual_incoming_items:
+            print(f"Vector from {self.report_vector(vector.startPos)} to {self.report_vector(vector.endPos)}"
+                +f"@{vector.time}, radius={vector.radius}, colorIdx={colorIdx}")
 
-            data = shapeRef.data
-            i0 = len(data.vertices)
-            data.vertices.add(len(request.vectors))
-            for i,vec in enumerate(request.vectors):
-                colorIdx = 0
-                if vec.HasField('colorIdx'):
-                    colorIdx = vec.colorIdx
-                else:
-                    colorIdx = self.palette.get_index_for_XRGB(vec.colorXRGB)
+        instancing_data.vertices[index].co.x = vector.startPos.x
+        instancing_data.vertices[index].co.y = vector.startPos.y
+        instancing_data.vertices[index].co.z = vector.startPos.z
+        instancing_data.attributes['start_pos'].data[index].vector = [vector.startPos.x,vector.startPos.y,vector.startPos.z]
+        instancing_data.attributes['end_pos'].data[index].vector = [vector.endPos.x,vector.endPos.y,vector.endPos.z]
+        instancing_data.attributes['time'].data[index].value = vector.time
+        instancing_data.attributes['radius'].data[index].value = vector.radius
+        instancing_data.attributes['material_idx'].data[index].value = colorIdx # TODO offset to vectors!, also heads!
 
-                if self.report_individual_incoming_items:
-                    print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}, radius={vec.radius}, colorIdx={colorIdx}")
 
-                data.vertices[i+i0].co.x = vec.startPos.x
-                data.vertices[i+i0].co.y = vec.startPos.y
-                data.vertices[i+i0].co.z = vec.startPos.z
-                data.attributes['start_pos'].data[i+i0].vector = [vec.startPos.x,vec.startPos.y,vec.startPos.z]
-                data.attributes['end_pos'].data[i+i0].vector = [vec.endPos.x,vec.endPos.y,vec.endPos.z]
-                data.attributes['radius'].data[i+i0].value = vec.radius
-                data.attributes['material_idx'].data[i+i0].value = colorIdx
-
-        self.done_working_with_Blender()
+    def getColorIdx(self, packet):
+        colorIdx = 0
+        if packet.HasField('colorIdx'):
+            colorIdx = packet.colorIdx
+        else:
+            colorIdx = self.palette.get_index_for_XRGB(packet.colorXRGB)
+        return colorIdx
 
 
     def showMessage(self, request: PROTOCOL.SignedTextMessage, context):
