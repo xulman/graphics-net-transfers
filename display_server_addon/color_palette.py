@@ -114,11 +114,9 @@ class ColorPalette:
         return ref_obj
 
 
-    def create_blender_reference_colored_nodes_into_new_collection(self, ref_shape_blender_obj, new_collection_name):
+    def create_blender_reference_colored_nodes_into_existing_collection(self, ref_shape_name_prefix:str, ref_shape_blender_obj, collection_ref):
         # clones the reference shape into many copies and attaches one color from our
         # palette to each of these copies; essentially clones and colors the ref shape
-        new_col = bpy.data.collections.new(new_collection_name)
-        bpy.data.collections['Reference shapes'].children.link(new_col)
 
         idx = 0
         for [n,r,g,b] in self.palette.values():
@@ -127,13 +125,11 @@ class ColorPalette:
             o.data = ref_shape_blender_obj.data.copy() # to be able to have own materials
 
             # give it a sort-order-preserving name
-            o.name = f"{idx}: {n}"
+            o.name = f"{ref_shape_name_prefix} {idx}: {n}"
             idx += 1
 
             # assign the material
             o.active_material = self.get_or_create_new_material(n, r,g,b)
 
             # make sure it ends up in the new collection
-            new_col.objects.link(o)
-
-        return new_col
+            collection_ref.objects.link(o)

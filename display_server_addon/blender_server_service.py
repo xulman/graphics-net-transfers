@@ -9,13 +9,6 @@ import bpy
 
 class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
 
-    def get_or_create_reference_colored_nodes_collection(self, wanted_ref_color_and_shape_col_name, for_this_ref_shape_obj):
-        col = bpy.data.collections.get(wanted_ref_color_and_shape_col_name)
-        if col is None:
-            col = self.palette.create_blender_reference_colored_nodes_into_new_collection(for_this_ref_shape_obj, wanted_ref_color_and_shape_col_name)
-        return col
-
-
     def rebuild_reference_colored_nodes_collections(self):
         if self.stop_and_wait_for_the_first_actual_use:
             print("Skipping 'rebuild_reference_colored_nodes_collections()' until first real usage of this service...")
@@ -42,21 +35,15 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             print(f"Failed to find {self.ref_shape_head_name} to use as the reference shape for VECTORS HEADS.")
             print("Please, create a blender object of that name, or change BlenderServerService's attribute 'ref_shape_head_name' to some existing one.")
 
-        self.colored_ref_spheres_col = \
-            self.get_or_create_reference_colored_nodes_collection(
-                    self.colored_ref_spheres_col_name, sphereObj)
 
-        self.colored_ref_lines_col = \
-            self.get_or_create_reference_colored_nodes_collection(
-                    self.colored_ref_lines_col_name, lineObj)
-
-        self.colored_ref_shafts_col = \
-            self.get_or_create_reference_colored_nodes_collection(
-                    self.colored_ref_shafts_col_name, vecShaftObj)
-
-        self.colored_ref_heads_col = \
-            self.get_or_create_reference_colored_nodes_collection(
-                    self.colored_ref_heads_col_name, vecHeadObj)
+        self.colored_ref_shapes_col = bpy.data.collections.get(self.colored_ref_shapes_col_name)
+        if self.colored_ref_shapes_col is None:
+            self.colored_ref_shapes_col = bpy.data.collections.new(self.colored_ref_shapes_col_name)
+            bpy.data.collections['Reference shapes'].children.link(self.colored_ref_shapes_col)
+            #
+            self.palette.create_blender_reference_colored_nodes_into_existing_collection('s', sphereObj,   self.colored_ref_shapes_col)
+            self.palette.create_blender_reference_colored_nodes_into_existing_collection('l', lineObj,     self.colored_ref_shapes_col)
+            self.palette.create_blender_reference_colored_nodes_into_existing_collection('v', vecShaftObj, self.colored_ref_shapes_col)
 
 
     def __init__(self, init_everything_now:bool = False):
@@ -73,11 +60,9 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.ref_shape_shaft_name = "refVectorShaft"
         self.ref_shape_head_name = "refVectorHead"
 
-        # color reference objects (which will include/swallow the shape ones!)
-        self.colored_ref_spheres_col_name = "Reference spheres"
-        self.colored_ref_lines_col_name = "Reference lines"
-        self.colored_ref_shafts_col_name = "Reference shafts"
-        self.colored_ref_heads_col_name = "Reference heads"
+        # the collection holding currently used colored reference shape objects
+        self.colored_ref_shapes_col_name = "Reference shapes"
+        self.colored_ref_shapes_col = None # to be determined later (when the Blender project is opened)
 
         # color palette
         self.palette = CP.ColorPalette()
