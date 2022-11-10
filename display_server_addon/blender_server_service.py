@@ -179,11 +179,19 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         return srcLevel
 
 
+    def replaceGraphics(self, request_iterator: PROTOCOL.BatchOfGraphics, context):
+        self.submit_work_for_Blender_and_wait(self.replaceGraphics_worker, request_iterator, "replaceGraphics()")
+        return PROTOCOL.Empty()
+
+    def replaceGraphics_worker(self):
+        self.addGraphics_worker(add_from_beginning=True)
+
+
     def addGraphics(self, request_iterator: PROTOCOL.BatchOfGraphics, context):
         self.submit_work_for_Blender_and_wait(self.addGraphics_worker, request_iterator, "addGraphics()")
         return PROTOCOL.Empty()
 
-    def addGraphics_worker(self):
+    def addGraphics_worker(self, add_from_beginning:bool = False):
         request_iterator: PROTOCOL.BatchOfGraphics = self.request_data
 
         for request in request_iterator:
