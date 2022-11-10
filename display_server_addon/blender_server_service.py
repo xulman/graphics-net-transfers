@@ -35,9 +35,9 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             self.colored_ref_shapes_col = bpy.data.collections.new(self.colored_ref_shapes_col_name)
             bpy.data.collections['Reference shapes'].children.link(self.colored_ref_shapes_col)
             #
-            self.palette.create_blender_reference_colored_nodes_into_existing_collection('L', lineObj,   self.colored_ref_shapes_col)
-            self.palette.create_blender_reference_colored_nodes_into_existing_collection('S', sphereObj, self.colored_ref_shapes_col)
-            self.palette.create_blender_reference_colored_nodes_into_existing_collection('V', vectorObj, self.colored_ref_shapes_col)
+            l_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('L', lineObj,   self.colored_ref_shapes_col)
+            s_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('S', sphereObj, self.colored_ref_shapes_col)
+            v_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('V', vectorObj, self.colored_ref_shapes_col)
 
 
     def __init__(self, init_everything_now:bool = False):

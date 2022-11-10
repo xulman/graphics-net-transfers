@@ -117,6 +117,8 @@ class ColorPalette:
     def create_blender_reference_colored_nodes_into_existing_collection(self, ref_shape_name_prefix:str, ref_shape_blender_obj, collection_ref):
         # clones the reference shape into many copies and attaches one color from our
         # palette to each of these copies; essentially clones and colors the ref shape
+        #
+        # returns the number of created copies = number of colored clones of the ref shape
 
         idx = 0
         for [n,r,g,b] in self.palette.values():
@@ -133,3 +135,5 @@ class ColorPalette:
 
             # make sure it ends up in the new collection
             collection_ref.objects.link(o)
+
+        return idx
