@@ -33,11 +33,15 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.colored_ref_shapes_col = bpy.data.collections.get(self.colored_ref_shapes_col_name)
         if self.colored_ref_shapes_col is None:
             self.colored_ref_shapes_col = bpy.data.collections.new(self.colored_ref_shapes_col_name)
-            bpy.data.collections['Reference shapes'].children.link(self.colored_ref_shapes_col)
+            BU.get_referenceShapes_collection().children.link(self.colored_ref_shapes_col)
             #
             l_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('L', lineObj,   self.colored_ref_shapes_col)
             s_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('S', sphereObj, self.colored_ref_shapes_col)
             v_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('V', vectorObj, self.colored_ref_shapes_col)
+            #
+            self.colored_ref_shapes_col["first line index"] = 0
+            self.colored_ref_shapes_col["first sphere index"] = l_cnt
+            self.colored_ref_shapes_col["first vector index"] = l_cnt + s_cnt
 
 
     def __init__(self, init_everything_now:bool = False):
@@ -45,7 +49,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         # default and immutable state of some reference objects
         self.hide_reference_position_objects = True
         self.hide_color_palette_obj = True
-        self.report_individual_incoming_items = False
+        self.report_individual_incoming_items = True #False
         self.report_also_repeating_debug_messages = True
 
         # shape reference objects
@@ -176,9 +180,9 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             srcLevelCol = self.get_client_collection(request.clientID)
 
             if self.report_also_repeating_debug_messages:
-                print(f"Request from {self.report_client(request.clientID)} to display on server.")
+                print(f"Request from {self.report_client(request.clientID)} to display into collection '{request.collectionName}'.")
                 print(f"Server creates object '{request.dataName}' (ID: {request.dataID}) "
-                    f"with {len(request.data)} items into collection {request.collectionName}.")
+                    f"with {len(request.spheres)} spheres, {len(request.lines)} lines and {len(request.vectors)} vectors.")
 
             clientName = request.clientID.clientName
             bucketName = f"{request.collectionName} from {clientName}"
@@ -186,7 +190,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
 
-            shapeName = f"{request.dataName} @ {bucketName}"
+            shapeName = f"{request.dataName} from {bucketName}"
             shapeRef = BU.add_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_shapes_col)
             shapeRef["ID"] = request.dataID
             shapeRef["from_client"] = clientName
@@ -196,43 +200,51 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             if add_from_beginning:
                 instancing_data.clear_geometry()
 
-            i0 = len(instancing_data.vertices) # the i0+ construct below turns adding into appending
-            instancing_data.vertices.add(len(request.data))
+            fill_this_idx = len(instancing_data.vertices)
+            instancing_data.vertices.add( len(request.spheres)+len(request.lines)+len(request.vectors) )
 
-            for i,shape in enumerate(request.data):
-                if shape.HasField('sphere'):
-                    self.addSphere(instancing_data,i0+i, shape.sphere)
-                elif shape.HasField('line'):
-                    self.addLine(instancing_data,i0+i, shape.line)
-                elif shape.HasField('vector'):
-                    self.addVector(instancing_data,i0+i, shape.vector)
+            l_idx = self.colored_ref_shapes_col["first line index"]
+            s_idx = self.colored_ref_shapes_col["first sphere index"]
+            v_idx = self.colored_ref_shapes_col["first vector index"]
+
+            for shape in request.spheres:
+                self.addSphere(instancing_data,fill_this_idx, shape, s_idx)
+                fill_this_idx += 1
+
+            for shape in request.lines:
+                self.addLine(instancing_data,fill_this_idx, shape, l_idx)
+                fill_this_idx += 1
+
+            for shape in request.vectors:
+                self.addVector(instancing_data,fill_this_idx, shape, v_idx)
+                fill_this_idx += 1
 
         self.done_working_with_Blender()
 
 
-    def addSphere(self, instancing_data, index, sphere:PROTOCOL.SphereParameters):
+    def addSphere(self, instancing_data, index, sphere:PROTOCOL.SphereParameters, mat_offset:int):
         colorIdx = self.getColorIdx(sphere)
 
         if self.report_individual_incoming_items:
             print(f"Sphere at {self.report_vector(sphere.centre)}"
-                +f"@{sphere.time}, radius={sphere.radius}, colorIdx={colorIdx}")
+                +f"@{sphere.time}, radius={sphere.radius}, colorIdx={colorIdx} (+{mat_offset})")
 
         instancing_data.vertices[index].co.x = sphere.centre.x
         instancing_data.vertices[index].co.y = sphere.centre.y
         instancing_data.vertices[index].co.z = sphere.centre.z
         instancing_data.attributes['start_pos'].data[index].vector = [0,0,0]
-        instancing_data.attributes['end_pos'].data[index].vector = [0,1,0]
+        instancing_data.attributes['end_pos'].data[index].vector = [0,0,sphere.radius]
         instancing_data.attributes['time'].data[index].value = sphere.time
         instancing_data.attributes['radius'].data[index].value = sphere.radius
-        instancing_data.attributes['material_idx'].data[index].value = colorIdx
+        instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
 
-    def addLine(self, instancing_data, index, line:PROTOCOL.LineParameters):
+    def addLine(self, instancing_data, index, line:PROTOCOL.LineParameters, mat_offset:int):
         colorIdx = self.getColorIdx(line)
 
         if self.report_individual_incoming_items:
             print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}"
-                +f"@{line.time}, radius={line.radius}, colorIdx={colorIdx}")
+                +f"@{line.time}, radius={line.radius}, colorIdx={colorIdx} (+{mat_offset})")
 
         instancing_data.vertices[index].co.x = line.startPos.x
         instancing_data.vertices[index].co.y = line.startPos.y
@@ -241,15 +253,15 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         instancing_data.attributes['end_pos'].data[index].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
         instancing_data.attributes['time'].data[index].value = line.time
         instancing_data.attributes['radius'].data[index].value = line.radius
-        instancing_data.attributes['material_idx'].data[index].value = colorIdx # TODO offset to lines!
+        instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
 
-    def addVector(self, instancing_data, index, vector:PROTOCOL.VectorParameters):
+    def addVector(self, instancing_data, index, vector:PROTOCOL.VectorParameters, mat_offset:int):
         colorIdx = self.getColorIdx(vector)
 
         if self.report_individual_incoming_items:
             print(f"Vector from {self.report_vector(vector.startPos)} to {self.report_vector(vector.endPos)}"
-                +f"@{vector.time}, radius={vector.radius}, colorIdx={colorIdx}")
+                +f"@{vector.time}, radius={vector.radius}, colorIdx={colorIdx} (+{mat_offset})")
 
         instancing_data.vertices[index].co.x = vector.startPos.x
         instancing_data.vertices[index].co.y = vector.startPos.y
@@ -258,7 +270,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         instancing_data.attributes['end_pos'].data[index].vector = [vector.endPos.x,vector.endPos.y,vector.endPos.z]
         instancing_data.attributes['time'].data[index].value = vector.time
         instancing_data.attributes['radius'].data[index].value = vector.radius
-        instancing_data.attributes['material_idx'].data[index].value = colorIdx # TODO offset to vectors!, also heads!
+        instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
 
     def getColorIdx(self, packet):

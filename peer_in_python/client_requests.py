@@ -11,7 +11,7 @@ def main() -> None:
     # this is where it should be transfered to
     clientName = "colorReporter"
     clientURL = "localhost:9085"
-    noOfSpheres = 2
+    noOfSpheres = 3
 
     serverURL = "localhost:9083"
 
@@ -38,51 +38,51 @@ def main() -> None:
         print("waiting for Enter key")
         input()
 
-        buckets = list()
+        batches = list()
         #
-        bucket = buckets_with_graphics_pb2.BucketOfSpheres()
-        bucket.clientID.clientName = clientName
-        bucket.bucketID = 13
-        bucket.label = "a couple of spheres"
-        bucket.time = 2
+        elem_group = buckets_with_graphics_pb2.BatchOfGraphics()
+        elem_group.clientID.clientName = clientName
+        elem_group.collectionName = "the first spheres"
+        elem_group.dataName = "spheres at TP=1"
+        elem_group.dataID = 13
         for i in range(noOfSpheres):
             sphParams = buckets_with_graphics_pb2.SphereParameters()
             sphParams.centre.x = 2.1 + i*1.5
             sphParams.centre.y = 0
-            sphParams.centre.z = 0.1
+            sphParams.centre.z = -1.5
+            sphParams.time = 1
             sphParams.radius = 1.1
-            colorShade = (1 + i%3) * 80
-            sphParams.colorXRGB = rgb_to_integer(colorShade,255//(i+1),0)
-            bucket.spheres.append(sphParams)
-        buckets.append(bucket)
+            sphParams.colorIdx = (1 + i%3) * 20
+            elem_group.spheres.append(sphParams)
+        batches.append(elem_group)
         #
-        bucket = buckets_with_graphics_pb2.BucketOfSpheres()
-        bucket.clientID.clientName = clientName
-        bucket.bucketID = 14
-        bucket.label = "a couple of spheres"
-        bucket.time = 3
+        elem_group = buckets_with_graphics_pb2.BatchOfGraphics()
+        elem_group.clientID.clientName = clientName
+        elem_group.collectionName = "the second spheres"
+        elem_group.dataName = "spheres at TP=2"
+        elem_group.dataID = 14
         for i in range(noOfSpheres):
             sphParams = buckets_with_graphics_pb2.SphereParameters()
             sphParams.centre.x = 2.1 + i*1.5
             sphParams.centre.y = 0.5
             sphParams.centre.z = 0.1
+            sphParams.time = 2
             sphParams.radius = 1.3
-            colorShade = (1 + i%3) * 80
-            sphParams.colorXRGB = rgb_to_integer(0,colorShade,0) #255//(i+1))
-            bucket.spheres.append(sphParams)
-        buckets.append(bucket)
+            sphParams.colorIdx = (0 + i%3) * 15
+            elem_group.spheres.append(sphParams)
+        batches.append(elem_group)
         #
-        comm.addSpheres(iter(buckets))
+        #comm.addGraphics(iter(batches))
 
-        print("waiting for Enter key")
-        input()
+        #print("waiting for Enter key")
+        #input()
 
-        buckets = list()
-        bucket = buckets_with_graphics_pb2.BucketOfVectors()
-        bucket.clientID.clientName = clientName
-        bucket.bucketID = 15
-        bucket.label = "a couple of vectors"
-        bucket.time = 3
+        #batches = list()
+        elem_group = buckets_with_graphics_pb2.BatchOfGraphics()
+        elem_group.clientID.clientName = clientName
+        elem_group.collectionName = "a couple of vectors"
+        elem_group.dataName = "vecs at TP = 3"
+        elem_group.dataID = 15
         for i in range(noOfSpheres):
             vecParams = buckets_with_graphics_pb2.VectorParameters()
             vecParams.startPos.x = 2.1 + i*1.5
@@ -91,12 +91,16 @@ def main() -> None:
             vecParams.endPos.x = 2.1 + i*1.5
             vecParams.endPos.y = 0.5
             vecParams.endPos.z = 5.1
+            vecParams.time = 4
             vecParams.radius = 0.2
             colorShade = (1 + i%3) * 80
             vecParams.colorXRGB = rgb_to_integer(255//(i+1),0,colorShade)
-            bucket.vectors.append(vecParams)
-        buckets.append(bucket)
-        comm.addVectors(iter(buckets))
+            elem_group.vectors.append(vecParams)
+        batches.append(elem_group)
+        comm.addGraphics(iter(batches))
+
+        print("waiting for Enter key")
+        input()
 
         select = buckets_with_graphics_pb2.SignedClickedIDs()
         select.clientID.clientName = clientName

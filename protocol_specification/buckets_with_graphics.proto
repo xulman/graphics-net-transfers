@@ -87,15 +87,9 @@ message BatchOfGraphics {
 	string dataName        = 5;   // Label/name of this data group
 	uint64 dataID          = 6;   // ID in the realm of the source
 	//select color palette
-	repeated Graphics data = 9;
-}
-
-message Graphics {
-	oneof shape {
-		SphereParameters sphere = 1;
-		LineParameters line     = 2;
-		VectorParameters vector = 3;
-	}
+	repeated SphereParameters spheres = 10;
+	repeated LineParameters lines     = 11;
+	repeated VectorParameters vectors = 12;
 }
 
 

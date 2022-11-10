@@ -68,7 +68,7 @@ def create_new_bucket(bucket_name:str, source_col_ref, hide_position_node = Fals
     ref_obj = get_new_ref_position_cube_obj()
     new_col.objects.link(ref_obj)
     #
-    ref_obj.name = "COORDINATES FRAME @ "+bucket_name
+    ref_obj.name = "COORDINATES FRAME for "+bucket_name
     ref_obj.parent = source_col_ref.objects[0]
     ref_obj.hide_viewport = hide_position_node
 
