@@ -15,20 +15,24 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             print("...or activate explicitly yourself via BlenderServerService's 'do_postponed_initialization()' method")
             return
 
-        sphereObj = bpy.data.objects.get(self.ref_shape_sphere_name)
+        ref_shapes_col = BU.get_referenceShapes_collection()
+        sphereObj = ref_shapes_col.objects.get(self.ref_shape_sphere_name)
         if sphereObj is None:
-            print(f"Failed to find {self.ref_shape_sphere_name} to use as the reference shape for SPHERES.")
-            print("Please, create a blender object of that name, or change BlenderServerService's attribute 'ref_shape_sphere_name' to some existing one.")
+            print(f"Failed to find {self.ref_shape_sphere_name} in 'Reference shapes' collection, to use it as")
+            print("the reference shape for SPHERES. Please, create a blender object of that name in that collection,")
+            print("or change BlenderServerService's attribute 'ref_shape_sphere_name' to some other existing one.")
 
-        lineObj = bpy.data.objects.get(self.ref_shape_line_name)
+        lineObj = ref_shapes_col.objects.get(self.ref_shape_line_name)
         if lineObj is None:
-            print(f"Failed to find {self.ref_shape_line_name} to use as the reference shape for LINES.")
-            print("Please, create a blender object of that name, or change BlenderServerService's attribute 'ref_shape_line_name' to some existing one.")
+            print(f"Failed to find {self.ref_shape_line_name} in 'Reference shapes' collection, to use it as")
+            print("the reference shape for LINES. Please, create a blender object of that name in that collection,")
+            print("or change BlenderServerService's attribute 'ref_shape_line_name' to some other existing one.")
 
-        vectorObj = bpy.data.objects.get(self.ref_shape_vector_name)
+        vectorObj = ref_shapes_col.objects.get(self.ref_shape_vector_name)
         if vectorObj is None:
-            print(f"Failed to find {self.ref_shape_vector_name} to use as the reference shape for VECTORS.")
-            print("Please, create a blender object of that name, or change BlenderServerService's attribute 'ref_shape_vector_name' to some existing one.")
+            print(f"Failed to find {self.ref_shape_vector_name} in 'Reference shapes' collection, to use it as")
+            print("the reference shape for VECTORS. Please, create a blender object of that name in that collection,")
+            print("or change BlenderServerService's attribute 'ref_shape_vector_name' to some other existing one.")
 
         self.colored_ref_shapes_col = bpy.data.collections.get(self.colored_ref_shapes_col_name)
         if self.colored_ref_shapes_col is None:
