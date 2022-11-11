@@ -38,44 +38,44 @@ def main() -> None:
         print("waiting for Enter key")
         input()
 
-        batches = list()
-        #
-        elem_group = buckets_with_graphics_pb2.BatchOfGraphics()
-        elem_group.clientID.clientName = clientName
-        elem_group.collectionName = "the first spheres"
-        elem_group.dataName = "spheres at TP=1"
-        elem_group.dataID = 13
-        for i in range(noOfSpheres):
-            sphParams = buckets_with_graphics_pb2.SphereParameters()
-            sphParams.centre.x = 2.1 + i*1.5
-            sphParams.centre.y = 0
-            sphParams.centre.z = 0.1
-            sphParams.time = 1
-            sphParams.radius = 1.1
-            sphParams.colorIdx = (1 + i%3) * 20
-            elem_group.spheres.append(sphParams)
-        batches.append(elem_group)
-        #
-        elem_group = buckets_with_graphics_pb2.BatchOfGraphics()
-        elem_group.clientID.clientName = clientName
-        elem_group.collectionName = "the first spheres"
-        elem_group.dataName = "spheres at TP=2"
-        elem_group.dataID = 14
-        for i in range(noOfSpheres):
-            sphParams = buckets_with_graphics_pb2.SphereParameters()
-            sphParams.centre.x = 2.1 + i*1.5
-            sphParams.centre.y = 0.5
-            sphParams.centre.z = 0.1
-            sphParams.time = 2
-            sphParams.radius = 1.3
-            sphParams.colorIdx = (0 + i%3) * 15
-            elem_group.spheres.append(sphParams)
-        batches.append(elem_group)
-        #
-        comm.addGraphics(iter(batches))
-
-        print("waiting for Enter key")
-        input()
+#       batches = list()
+#       #
+#       elem_group = buckets_with_graphics_pb2.BatchOfGraphics()
+#       elem_group.clientID.clientName = clientName
+#       elem_group.collectionName = "the first spheres"
+#       elem_group.dataName = "spheres at TP=1"
+#       elem_group.dataID = 13
+#       for i in range(noOfSpheres):
+#           sphParams = buckets_with_graphics_pb2.SphereParameters()
+#           sphParams.centre.x = 2.1 + i*1.5
+#           sphParams.centre.y = 0
+#           sphParams.centre.z = -1.5
+#           sphParams.time = 1
+#           sphParams.radius = 1.1
+#           sphParams.colorIdx = (1 + i%3) * 20
+#           elem_group.spheres.append(sphParams)
+#       #batches.append(elem_group)
+#       #
+#       #elem_group = buckets_with_graphics_pb2.BatchOfGraphics()
+#       elem_group.clientID.clientName = clientName
+#       elem_group.collectionName = "the second spheres"
+#       elem_group.dataName = "spheres at TP=2"
+#       elem_group.dataID = 14
+#       for i in range(noOfSpheres):
+#           sphParams = buckets_with_graphics_pb2.SphereParameters()
+#           sphParams.centre.x = 2.1 + i*1.5
+#           sphParams.centre.y = 0.5
+#           sphParams.centre.z = 0.1
+#           sphParams.time = 2
+#           sphParams.radius = 1.3
+#           sphParams.colorIdx = (0 + i%3) * 15
+#           elem_group.spheres.append(sphParams)
+#       #batches.append(elem_group)
+#       #
+#       #comm.addGraphics(iter(batches))
+#
+#       #print("waiting for Enter key")
+#       #input()
 
         batches = list()
         elem_group = buckets_with_graphics_pb2.BatchOfGraphics()
@@ -91,13 +91,13 @@ def main() -> None:
             vecParams.endPos.x = 2.1 + i*1.5
             vecParams.endPos.y = 0.5
             vecParams.endPos.z = 5.1
-            vecParams.time = 3
+            vecParams.time = 4
             vecParams.radius = 0.2
             colorShade = (1 + i%3) * 80
             vecParams.colorXRGB = rgb_to_integer(255//(i+1),0,colorShade)
             elem_group.vectors.append(vecParams)
         batches.append(elem_group)
-        comm.addGraphics(iter(batches))
+        comm.replaceGraphics(iter(batches))
 
         print("waiting for Enter key")
         input()
