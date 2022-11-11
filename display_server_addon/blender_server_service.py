@@ -149,6 +149,8 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         srcLevel = BU.get_collection_for_source(clientName)
         if srcLevel is None:
             srcLevel = BU.create_new_collection_for_source(clientName,retURL, hide_position_node = self.hide_reference_position_objects)
+        srcLevel["from_client"]  = clientName
+        srcLevel["feedback_URL"] = retURL
 
         self.known_clients_retUrls[clientName] = retURL
 
@@ -193,11 +195,13 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
+                bucketLevelCol["from_client"]  = clientName
+                bucketLevelCol["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
             shapeName = f"{request.dataName} from {bucketName}"
             shapeRef = BU.add_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_shapes_col)
             shapeRef["ID"] = request.dataID
-            shapeRef["from_client"] = clientName
+            shapeRef["from_client"]  = clientName
             shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
             instancing_data = shapeRef.data
