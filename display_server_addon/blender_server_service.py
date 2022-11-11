@@ -39,9 +39,9 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             self.colored_ref_shapes_col = bpy.data.collections.new(self.colored_ref_shapes_col_name)
             BU.get_referenceShapes_collection().children.link(self.colored_ref_shapes_col)
             #
-            l_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('L', lineObj,   self.colored_ref_shapes_col)
-            s_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('S', sphereObj, self.colored_ref_shapes_col)
-            v_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('V', vectorObj, self.colored_ref_shapes_col)
+            l_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('L', lineObj,   self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
+            s_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('S', sphereObj, self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
+            v_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('V', vectorObj, self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
             #
             self.colored_ref_shapes_col["first line index"] = 0
             self.colored_ref_shapes_col["first sphere index"] = l_cnt
@@ -53,7 +53,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         # default and immutable state of some reference objects
         self.hide_reference_position_objects = True
         self.hide_color_palette_obj = True
-        self.report_individual_incoming_items = True #False
+        self.report_individual_incoming_items = False
         self.report_also_repeating_debug_messages = True
 
         # shape reference objects
@@ -161,7 +161,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         if srcLevel is None:
             srcLevel = BU.get_collection_for_source("anonymous")
             if srcLevel is None:
-                srcLevel = BU.create_new_collection_for_source("anonymous", self.unknown_client_retUrl, hide_position_node = True)
+                srcLevel = BU.create_new_collection_for_source("anonymous", self.unknown_client_retUrl, hide_position_node = self.hide_reference_position_objects)
         return srcLevel
 
 

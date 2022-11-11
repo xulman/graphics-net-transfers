@@ -48,7 +48,7 @@ def create_new_collection_for_source(source_name:str, source_URL:str, hide_posit
     ref_obj.name = "COORDINATES FRAME for "+source_name
     ref_obj["from_client"] = source_name
     ref_obj["feedback_URL"] = source_URL
-    ref_obj.hide_viewport = hide_position_node
+    ref_obj.hide_set(hide_position_node)
 
     return new_src_col
 
@@ -70,7 +70,7 @@ def create_new_bucket(bucket_name:str, source_col_ref, hide_position_node = Fals
     #
     ref_obj.name = "COORDINATES FRAME for "+bucket_name
     ref_obj.parent = source_col_ref.objects[0]
-    ref_obj.hide_viewport = hide_position_node
+    ref_obj.hide_set(hide_position_node)
 
     return new_col
 

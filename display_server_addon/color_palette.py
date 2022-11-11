@@ -114,7 +114,7 @@ class ColorPalette:
         return ref_obj
 
 
-    def create_blender_reference_colored_nodes_into_existing_collection(self, ref_shape_name_prefix:str, ref_shape_blender_obj, collection_ref):
+    def create_blender_reference_colored_nodes_into_existing_collection(self, ref_shape_name_prefix:str, ref_shape_blender_obj, collection_ref, hide_colored_shape_objs = True):
         # clones the reference shape into many copies and attaches one color from our
         # palette to each of these copies; essentially clones and colors the ref shape
         #
@@ -128,6 +128,7 @@ class ColorPalette:
 
             # give it a sort-order-preserving name
             o.name = f"{ref_shape_name_prefix} {idx}: {n}"
+            o.hide_set(hide_colored_shape_objs)
             idx += 1
 
             # assign the material
