@@ -128,20 +128,3 @@ def add_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_shapes_col
     gn['Input_13'] = colored_shapes_col_ref # shape_and_colors_ref_objs
 
     return shape_node
-
-
-def demo():
-    # create_empty_container("spheres",5,bpy.data.objects['refSphere'])
-    srcLevelCol = create_new_collection_for_source("Mastodon 11","localhost:223344")
-    #srcLevelCol = get_collection_for_source("Mastodon 11")
-    print(srcLevelCol.name)
-
-    refSphere = bpy.data.objects["refSphere"]
-    basicColorPalette = bpy.data.objects["Color palette"]
-
-    bucketLevelCol = create_new_bucket("tp=4", 4, srcLevelCol)
-    shapeRef = add_sphere_shape_into_that_bucket("spheres", refSphere, basicColorPalette, bucketLevelCol)
-
-    bucketLevelCol = create_new_bucket("tp=5", 5, srcLevelCol)
-    shapeRef = add_sphere_shape_into_that_bucket("another spheres", refSphere, basicColorPalette, bucketLevelCol)
-
