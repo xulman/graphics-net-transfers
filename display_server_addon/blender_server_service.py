@@ -54,7 +54,8 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.hide_reference_position_objects = True
         self.hide_color_palette_obj = True
         self.report_individual_incoming_items = False
-        self.report_also_repeating_debug_messages = True
+        self.report_individual_incoming_batches = True
+        self.report_also_repeating_debug_messages = False
 
         # shape reference objects
         self.ref_shape_sphere_name = "refSphere"
@@ -185,7 +186,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
 
-            if self.report_also_repeating_debug_messages:
+            if self.report_individual_incoming_batches:
                 print(f"Request from {self.report_client(request.clientID)} to display into collection '{request.collectionName}'.")
                 print(f"Server creates object '{request.dataName}' (ID: {request.dataID}) "
                     f"with {len(request.spheres)} spheres, {len(request.lines)} lines and {len(request.vectors)} vectors.")
