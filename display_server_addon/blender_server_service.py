@@ -245,7 +245,8 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         instancing_data.vertices[index].co.z = sphere.centre.z
         instancing_data.attributes['start_pos'].data[index].vector = [0,0,0]
         instancing_data.attributes['end_pos'].data[index].vector = [0,0,sphere.radius]
-        instancing_data.attributes['time'].data[index].value = sphere.time
+        instancing_data.attributes['time_from'].data[index].value = sphere.time - 0.5
+        instancing_data.attributes['time_to'].data[index].value = sphere.time + 0.5
         instancing_data.attributes['radius'].data[index].value = sphere.radius
         instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
@@ -262,7 +263,8 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         instancing_data.vertices[index].co.z = line.startPos.z
         instancing_data.attributes['start_pos'].data[index].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
         instancing_data.attributes['end_pos'].data[index].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
-        instancing_data.attributes['time'].data[index].value = line.time
+        instancing_data.attributes['time_from'].data[index].value = line.time - 0.5
+        instancing_data.attributes['time_to'].data[index].value = line.time + 0.5
         instancing_data.attributes['radius'].data[index].value = line.radius
         instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
@@ -279,7 +281,8 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         instancing_data.vertices[index].co.z = vector.startPos.z
         instancing_data.attributes['start_pos'].data[index].vector = [vector.startPos.x,vector.startPos.y,vector.startPos.z]
         instancing_data.attributes['end_pos'].data[index].vector = [vector.endPos.x,vector.endPos.y,vector.endPos.z]
-        instancing_data.attributes['time'].data[index].value = vector.time
+        instancing_data.attributes['time_from'].data[index].value = vector.time - 0.5
+        instancing_data.attributes['time_to'].data[index].value = vector.time + 0.5
         instancing_data.attributes['radius'].data[index].value = vector.radius
         instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 

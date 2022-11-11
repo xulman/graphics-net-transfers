@@ -103,7 +103,8 @@ def introduce_attributes_for_protocol_data(node_obj):
     mesh = node_obj.data
     mesh.attributes.new("start_pos",'FLOAT_VECTOR','POINT')
     mesh.attributes.new("end_pos",'FLOAT_VECTOR','POINT')
-    mesh.attributes.new("time",'INT','POINT')
+    mesh.attributes.new("time_from",'FLOAT','POINT')
+    mesh.attributes.new("time_to",'FLOAT','POINT')
     mesh.attributes.new("radius",'FLOAT','POINT')
     mesh.attributes.new("material_idx",'INT','POINT')
 
