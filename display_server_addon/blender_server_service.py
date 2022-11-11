@@ -203,6 +203,8 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             instancing_data = shapeRef.data
             if add_from_beginning:
                 instancing_data.clear_geometry()
+                # cleared also attributes, must be restored again
+                BU.introduce_attributes_for_protocol_data(shapeRef)
 
             fill_this_idx = len(instancing_data.vertices)
             instancing_data.vertices.add( len(request.spheres)+len(request.lines)+len(request.vectors) )

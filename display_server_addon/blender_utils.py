@@ -101,21 +101,24 @@ def setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref):
     return shape_node
 
 
-def add_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_shapes_col_ref):
-    shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
-    if shape_node is not None:
-        return shape_node
-
-    shape_node = setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref)
-    #
-    # add attributes to its mesh points
-    mesh = shape_node.data
+def introduce_attributes_for_protocol_data(node_obj):
+    mesh = node_obj.data
     mesh.attributes.new("start_pos",'FLOAT_VECTOR','POINT')
     mesh.attributes.new("end_pos",'FLOAT_VECTOR','POINT')
     mesh.attributes.new("time",'INT','POINT')
     mesh.attributes.new("radius",'FLOAT','POINT')
     mesh.attributes.new("material_idx",'INT','POINT')
 
+
+def add_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_shapes_col_ref):
+    shape_node = get_objName_from_that_collectionRef(node_name, bucket_col_ref)
+    if shape_node is not None:
+        return shape_node
+
+    shape_node = setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref)
+    introduce_attributes_for_protocol_data(shape_node)
+
+    # object to with reference coordinates frame
     ref_point_for_bucket = bucket_col_ref.objects[0]
 
     # setup Geometry Nodes
