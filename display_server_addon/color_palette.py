@@ -126,6 +126,9 @@ class ColorPalette:
             o = ref_shape_blender_obj.copy()
             o.data = ref_shape_blender_obj.data.copy() # to be able to have own materials
 
+            # make sure it ends up in the new collection
+            collection_ref.objects.link(o)
+
             # give it a sort-order-preserving name
             o.name = f"{ref_shape_name_prefix} {idx}: {n}"
             o.hide_set(hide_colored_shape_objs)
@@ -133,8 +136,5 @@ class ColorPalette:
 
             # assign the material
             o.active_material = self.get_or_create_new_material(n, r,g,b)
-
-            # make sure it ends up in the new collection
-            collection_ref.objects.link(o)
 
         return idx
