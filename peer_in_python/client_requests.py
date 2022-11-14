@@ -1,5 +1,5 @@
 from grpc import insecure_channel, RpcError
-import buckets_with_graphics_pb2 as COMMUNICATION
+import buckets_with_graphics_pb2 as PROTOCOL
 import buckets_with_graphics_pb2_grpc
 from math import sin
 
@@ -32,7 +32,7 @@ def main() -> None:
         print("going to send the 'introduce me' message... (press Enter key)")
         input()
 
-        clientGreeting = COMMUNICATION.ClientHello()
+        clientGreeting = PROTOCOL.ClientHello()
         clientGreeting.clientID.clientName = clientName
         clientGreeting.returnURL = clientURL
         comm.introduceClient(clientGreeting)
@@ -42,7 +42,7 @@ def main() -> None:
 
         # re-introduce ourselves again, this time we don't provide feedback URL
         # (which a signal that we don't want to be getting any feedback events)
-        clientGreeting = COMMUNICATION.ClientHello()
+        clientGreeting = PROTOCOL.ClientHello()
         clientGreeting.clientID.clientName = clientName
         comm.introduceClient(clientGreeting)
 
@@ -51,7 +51,7 @@ def main() -> None:
         input()
 
         noOfSpheres = 50000
-        msg = COMMUNICATION.SignedTextMessage()
+        msg = PROTOCOL.SignedTextMessage()
         msg.clientID.clientName = clientName
         msg.clientMessage.msg = f"I'm sending you {noOfSpheres} spheres"
         comm.showMessage(msg)
@@ -66,7 +66,7 @@ def main() -> None:
         # the first message, it will request to show 'noOfSpheres'
         # in 'the first spheres' collection of ours, the spheres will
         # appear as Blender object/node with the name 'spheres at TP=1'
-        one_message = COMMUNICATION.BatchOfGraphics()
+        one_message = PROTOCOL.BatchOfGraphics()
         one_message.clientID.clientName = clientName  # gprc is REST -> no sessions -> inform who is sending
         one_message.collectionName = "the spheres"    # our own arbitrary (but mandatory!) grouping of content
         one_message.dataName = "spheres at TP=1"      # name of the object that will represent the content
@@ -74,7 +74,7 @@ def main() -> None:
         #
         # start requesting the spheres to be displayed
         for i in range(noOfSpheres):
-            sphParams = COMMUNICATION.SphereParameters()
+            sphParams = PROTOCOL.SphereParameters()
             sphParams.centre.x,sphParams.centre.y = get_xy(i)
             sphParams.centre.z = 0.1
             sphParams.time = 1
@@ -86,13 +86,13 @@ def main() -> None:
         messages.append(one_message)
 
         # the second message, it will request... well... spheres again
-        one_message = COMMUNICATION.BatchOfGraphics()
+        one_message = PROTOCOL.BatchOfGraphics()
         one_message.clientID.clientName = clientName
         one_message.collectionName = "the spheres"  # yes, we're going to add more stuff into the same/one collection
         one_message.dataName = "spheres at TP=2"    # just under different Blender object
         one_message.dataID = 14
         for i in range(noOfSpheres):
-            sphParams = COMMUNICATION.SphereParameters()
+            sphParams = PROTOCOL.SphereParameters()
             sphParams.centre.x,sphParams.centre.y = get_xy(i)
             sphParams.centre.z = 0.1
             sphParams.time = 2
@@ -111,14 +111,14 @@ def main() -> None:
         input()
 
         messages = list()
-        one_message = COMMUNICATION.BatchOfGraphics()
+        one_message = PROTOCOL.BatchOfGraphics()
         one_message.clientID.clientName = clientName
         one_message.collectionName = "mixed content"
         one_message.dataName = "vecs and lines at TP = 2"
         one_message.dataID = 15
         #
         for i in range(0,noOfSpheres,2):
-            vecParams = COMMUNICATION.VectorParameters()
+            vecParams = PROTOCOL.VectorParameters()
             vecParams.startPos.x,vecParams.startPos.y = get_xy(i)
             vecParams.startPos.z = 1.4
             vecParams.endPos.x = vecParams.startPos.x
@@ -131,7 +131,7 @@ def main() -> None:
             one_message.vectors.append(vecParams)
         #
         for i in range(1,noOfSpheres,2):
-            lineParams = COMMUNICATION.LineParameters()
+            lineParams = PROTOCOL.LineParameters()
             lineParams.startPos.x,lineParams.startPos.y = get_xy(i)
             lineParams.startPos.z = 1.4
             lineParams.endPos.x = lineParams.startPos.x
@@ -153,12 +153,15 @@ def main() -> None:
         print("going to send a request to select some of the previously sent objects...")
         input()
 
-        select = COMMUNICATION.SignedClickedIDs()
+        select = PROTOCOL.SignedClickedIDs()
         select.clientID.clientName = clientName
         select.clientClickedIDs.objIDs.append(14)
         select.clientClickedIDs.objIDs.append(15)
         comm.selectEvent(select)
-        #comm.focusEvent(select)
+
+        name = PROTOCOL.ClientIdentification()
+        name.clientName = clientName
+        comm.unfocusEvent(name)
 
 
     except RpcError as e:

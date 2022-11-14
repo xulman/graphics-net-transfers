@@ -1,7 +1,7 @@
 from grpc import server, RpcError
 from concurrent import futures
 from time import sleep
-import buckets_with_graphics_pb2
+import buckets_with_graphics_pb2 as PROTOCOL
 import buckets_with_graphics_pb2_grpc
 
 # this is where it should be listening at
@@ -9,17 +9,25 @@ clientName = "fakeMastodonClient"
 clientPort = 9085
 
 class ClientService(buckets_with_graphics_pb2_grpc.ServerToClientServicer):
-    def showMessage(self, request: buckets_with_graphics_pb2.TextMessage, context):
+    def showMessage(self, request: PROTOCOL.TextMessage, context):
         print(f"Client '{clientName}' got a message: {request.msg}")
-        return buckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
 
-    def focusEvent(self, request: buckets_with_graphics_pb2.ClickedIDs, context):
+    def focusEvent(self, request: PROTOCOL.ClickedIDs, context):
         print(f"Client '{clientName}' will focus on IDs: {request.objIDs}")
-        return buckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
 
-    def selectEvent(self, request: buckets_with_graphics_pb2.ClickedIDs, context):
+    def unfocusEvent(self, empty_request, context):
+        print(f"Client '{clientName}' shall not focus on any IDs")
+        return PROTOCOL.Empty()
+
+    def selectEvent(self, request: PROTOCOL.ClickedIDs, context):
         print(f"Client '{clientName}' will select IDs: {request.objIDs}")
-        return buckets_with_graphics_pb2.Empty()
+        return PROTOCOL.Empty()
+
+    def unselectEvent(self, request: PROTOCOL.ClickedIDs, context):
+        print(f"Client '{clientName}' will unselect IDs: {request.objIDs}")
+        return PROTOCOL.Empty()
 
 
 def main() -> None:

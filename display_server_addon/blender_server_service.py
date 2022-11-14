@@ -304,8 +304,16 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         print(f"{self.report_client(request.clientID)} requests server to focus on IDs: {request.clientClickedIDs.objIDs}")
         return PROTOCOL.Empty()
 
+    def unfocusEvent(self, request: PROTOCOL.ClientIdentification, context):
+        print(f"{self.report_client(request)} requests not to focus on any IDs")
+        return PROTOCOL.Empty()
+
     def selectEvent(self, request: PROTOCOL.SignedClickedIDs, context):
         print(f"{self.report_client(request.clientID)} requests server to select IDs: {request.clientClickedIDs.objIDs}")
+        return PROTOCOL.Empty()
+
+    def unselectEvent(self, request: PROTOCOL.SignedClickedIDs, context):
+        print(f"{self.report_client(request.clientID)} requests server to unselect IDs: {request.clientClickedIDs.objIDs}")
         return PROTOCOL.Empty()
 
 
