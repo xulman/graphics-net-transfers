@@ -1,6 +1,7 @@
 from . import buckets_with_graphics_pb2 as PROTOCOL
 from . import buckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
+from . import color_palette as CP
 from threading import Lock
 from time import sleep
 import bpy
@@ -8,30 +9,67 @@ import bpy
 
 class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
 
-    def get_main_color_palette_obj(self):
-        if self.color_palette_obj is not None:
-            return self.color_palette_obj
+    def rebuild_reference_colored_nodes_collections(self):
+        if self.stop_and_wait_for_the_first_actual_use:
+            print("Skipping 'rebuild_reference_colored_nodes_collections()' until first real usage of this service...")
+            print("...or activate explicitly yourself via BlenderServerService's 'do_postponed_initialization()' method")
+            return
 
-        self.color_palette_obj = bpy.data.objects.get("Color palette")
-        if self.color_palette_obj is None:
-            print("WARN: not found 'Color palette' node, creating one...")
-            print("  ...which may take a little time, please wait")
-            self.color_palette_obj = BU.create_color_palette_node("Color palette",
-                    BU.colors_enumerate_all(), hide_node = self.hide_color_palette_obj)
-            BU.move_obj_into_this_collection(self.color_palette_obj, BU.get_mainScene_collection())
-            print("  ...done creating this node")
-        return self.color_palette_obj
+        ref_shapes_col = BU.get_referenceShapes_collection()
+        sphereObj = ref_shapes_col.objects.get(self.ref_shape_sphere_name)
+        if sphereObj is None:
+            print(f"Failed to find {self.ref_shape_sphere_name} in 'Reference shapes' collection, to use it as")
+            print("the reference shape for SPHERES. Please, create a blender object of that name in that collection,")
+            print("or change BlenderServerService's attribute 'ref_shape_sphere_name' to some other existing one.")
+
+        lineObj = ref_shapes_col.objects.get(self.ref_shape_line_name)
+        if lineObj is None:
+            print(f"Failed to find {self.ref_shape_line_name} in 'Reference shapes' collection, to use it as")
+            print("the reference shape for LINES. Please, create a blender object of that name in that collection,")
+            print("or change BlenderServerService's attribute 'ref_shape_line_name' to some other existing one.")
+
+        vectorObj = ref_shapes_col.objects.get(self.ref_shape_vector_name)
+        if vectorObj is None:
+            print(f"Failed to find {self.ref_shape_vector_name} in 'Reference shapes' collection, to use it as")
+            print("the reference shape for VECTORS. Please, create a blender object of that name in that collection,")
+            print("or change BlenderServerService's attribute 'ref_shape_vector_name' to some other existing one.")
+
+        self.colored_ref_shapes_col = bpy.data.collections.get(self.colored_ref_shapes_col_name)
+        if self.colored_ref_shapes_col is None:
+            self.colored_ref_shapes_col = bpy.data.collections.new(self.colored_ref_shapes_col_name)
+            BU.get_referenceShapes_collection().children.link(self.colored_ref_shapes_col)
+            #
+            l_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('L', lineObj,   self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
+            s_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('S', sphereObj, self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
+            v_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('V', vectorObj, self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
+            #
+            self.colored_ref_shapes_col["first line index"] = 0
+            self.colored_ref_shapes_col["first sphere index"] = l_cnt
+            self.colored_ref_shapes_col["first vector index"] = l_cnt + s_cnt
 
 
-    def __init__(self):
+    def __init__(self, init_everything_now:bool = False):
         # ----- VISIBILITY -----
         # default and immutable state of some reference objects
-        self.hide_reference_position_objects = False
+        self.hide_reference_position_objects = True
         self.hide_color_palette_obj = True
         self.report_individual_incoming_items = False
+        self.report_individual_incoming_batches = True
+        self.report_also_repeating_debug_messages = False
 
-        # some more reference objects
-        self.color_palette_obj = None # makes the class to find (or create) it later
+        # shape reference objects
+        self.ref_shape_sphere_name = "refSphere"
+        self.ref_shape_line_name = "refLine"
+        self.ref_shape_vector_name = "refVector"
+
+        # the collection holding currently used colored reference shape objects
+        self.colored_ref_shapes_col_name = "Standard colors"
+        self.colored_ref_shapes_col = None # to be determined later (when the Blender project is opened)
+
+        # color palette
+        self.palette = CP.ColorPalette()
+        self.stop_and_wait_for_the_first_actual_use = not init_everything_now
+        self.rebuild_reference_colored_nodes_collections()
 
         # ----- COMMUNICATION -----
         # to make sure that talking to Blender is serialized
@@ -41,23 +79,52 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         # to signal Blender's callback is active
         self.request_callback_is_running = False
+        self.request_callback_routine = None
+
+        self.known_clients_retUrls = dict()
+        self.unknown_client_retUrl = "no callback"
+
+
+    def do_postponed_initialization(self):
+        # essentially a collection of methods that should be used during init(),
+        # but need to be called only when the proper project is opened... and are
+        # thus postponed until first actual use/trigger of the gRPC (which should
+        # happen only when the correct project is opened);
+        #
+        # in general, the methods listed below should be guarding themselves
+        # with the self.stop_and_wait_for_the_first_actual_use()
+        self.stop_and_wait_for_the_first_actual_use = False
+        print("First real usage of this service detected, finalizing some late initializations...")
+
+        self.rebuild_reference_colored_nodes_collections()
+        print("Done finalizing some late initializations...\n")
+
+
+    def runs_when_blender_allows(self):
+        if self.stop_and_wait_for_the_first_actual_use:
+            self.do_postponed_initialization()
+        self.request_callback_routine()
 
     def submit_work_for_Blender_and_wait(self, code, data, reports_name: str):
-        print(f"{reports_name} wants to talk to Blender...")
+        if self.report_also_repeating_debug_messages:
+            print(f"{reports_name} wants to talk to Blender...")
         self.request_lock.acquire()
-        print(f"{reports_name} is now talking to Blender...")
+        if self.report_also_repeating_debug_messages:
+            print(f"{reports_name} is now talking to Blender...")
 
         # prepare data and ask Blender to execute our code
         self.request_data = data
         self.request_callback_is_running = True
-        bpy.app.timers.register(code, first_interval=0.01)
+        self.request_callback_routine = code
+        bpy.app.timers.register(self.runs_when_blender_allows, first_interval=0.003)
 
         # wait for our code to finish
         # NB: flag is cleared in the signalling method done_working_with_Blender()
         while self.request_callback_is_running:
             sleep(0.2)
 
-        print(f"{reports_name} just finished talking to Blender...")
+        if self.report_also_repeating_debug_messages:
+            print(f"{reports_name} just finished talking to Blender...\n")
         self.request_lock.release()
 
     def done_working_with_Blender(self):
@@ -75,7 +142,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         retURL = request.returnURL
         if retURL is None or retURL == "":
             print("  -> with NO callback")
-            retURL = "no callback"
+            retURL = self.unknown_client_retUrl
         else:
             print(f"  -> with callback to >>{request.returnURL}<<")
 
@@ -83,6 +150,10 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         srcLevel = BU.get_collection_for_source(clientName)
         if srcLevel is None:
             srcLevel = BU.create_new_collection_for_source(clientName,retURL, hide_position_node = self.hide_reference_position_objects)
+        srcLevel["from_client"]  = clientName
+        srcLevel["feedback_URL"] = retURL
+
+        self.known_clients_retUrls[clientName] = retURL
 
         self.done_working_with_Blender()
 
@@ -93,127 +164,136 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         if srcLevel is None:
             srcLevel = BU.get_collection_for_source("anonymous")
             if srcLevel is None:
-                srcLevel = BU.create_new_collection_for_source("anonymous", "no callback", hide_position_node = True)
+                srcLevel = BU.create_new_collection_for_source("anonymous", self.unknown_client_retUrl, hide_position_node = self.hide_reference_position_objects)
         return srcLevel
 
 
-    def addSpheres(self, request_iterator: PROTOCOL.BucketOfSpheres, context):
-        self.submit_work_for_Blender_and_wait(self.addSpheres_worker, request_iterator, "addSpheres()")
+    def replaceGraphics(self, request_iterator: PROTOCOL.BatchOfGraphics, context):
+        self.submit_work_for_Blender_and_wait(self.replaceGraphics_worker, request_iterator, "replaceGraphics()")
         return PROTOCOL.Empty()
 
-    def addSpheres_worker(self):
-        request_iterator: PROTOCOL.BucketOfSpheres = self.request_data
+    def replaceGraphics_worker(self):
+        self.addGraphics_worker(add_from_beginning=True)
+
+
+    def addGraphics(self, request_iterator: PROTOCOL.BatchOfGraphics, context):
+        self.submit_work_for_Blender_and_wait(self.addGraphics_worker, request_iterator, "addGraphics()")
+        return PROTOCOL.Empty()
+
+    def addGraphics_worker(self, add_from_beginning:bool = False):
+        request_iterator: PROTOCOL.BatchOfGraphics = self.request_data
 
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
-            refSphere = bpy.data.objects["refSphere"]
 
-            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
-            print(f"Server creates SPHERES bucket '{request.label}' (ID: {request.bucketID}) for "
-                f"time {request.time} with {len(request.spheres)} items.")
+            if self.report_individual_incoming_batches:
+                print(f"Request from {self.report_client(request.clientID)} to display into collection '{request.collectionName}'.")
+                print(f"Server creates object '{request.dataName}' (ID: {request.dataID}) "
+                    f"with {len(request.spheres)} spheres, {len(request.lines)} lines and {len(request.vectors)} vectors.")
 
-            bucketName = f"TP={request.time}"
+            clientName = request.clientID.clientName
+            bucketName = f"{request.collectionName} [{clientName}]"
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
-                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
+                bucketLevelCol = BU.create_new_bucket(bucketName, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
+                bucketLevelCol["from_client"]  = clientName
+                bucketLevelCol["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
-            shapeRef = BU.add_sphere_shape_into_that_bucket(request.label, refSphere, self.get_main_color_palette_obj(), bucketLevelCol)
-            shapeRef["ID"] = request.bucketID
+            shapeName = f"{request.dataName} [{bucketName}]"
+            shapeRef = BU.add_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_shapes_col)
+            shapeRef["ID"] = request.dataID
+            shapeRef["from_client"]  = clientName
+            shapeRef["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
-            data = shapeRef.data
-            data.vertices.add(len(request.spheres))
-            for i,sphere in enumerate(request.spheres):
-                if self.report_individual_incoming_items:
-                    print(f"Sphere at {self.report_vector(sphere.centre)}, radius={sphere.radius}, color={BU.integer_to_color(sphere.colorXRGB)}")
-                data.vertices[i].co.x = sphere.centre.x
-                data.vertices[i].co.y = sphere.centre.y
-                data.vertices[i].co.z = sphere.centre.z
-                data.attributes['radius'].data[i].value = sphere.radius
-                r,g,b = BU.integer_to_color(sphere.colorXRGB)
-                data.attributes['material_idx'].data[i].value = BU.color_to_index(r,g,b)
+            instancing_data = shapeRef.data
+            if add_from_beginning:
+                instancing_data.clear_geometry()
+                # cleared also attributes, must be restored again
+                BU.introduce_attributes_for_protocol_data(shapeRef)
+
+            fill_this_idx = len(instancing_data.vertices)
+            instancing_data.vertices.add( len(request.spheres)+len(request.lines)+len(request.vectors) )
+
+            l_idx = self.colored_ref_shapes_col["first line index"]
+            s_idx = self.colored_ref_shapes_col["first sphere index"]
+            v_idx = self.colored_ref_shapes_col["first vector index"]
+
+            for shape in request.spheres:
+                self.addSphere(instancing_data,fill_this_idx, shape, s_idx)
+                fill_this_idx += 1
+
+            for shape in request.lines:
+                self.addLine(instancing_data,fill_this_idx, shape, l_idx)
+                fill_this_idx += 1
+
+            for shape in request.vectors:
+                self.addVector(instancing_data,fill_this_idx, shape, v_idx)
+                fill_this_idx += 1
 
         self.done_working_with_Blender()
 
 
-    def addLines(self, request_iterator: PROTOCOL.BucketOfLines, context):
-        self.submit_work_for_Blender_and_wait(self.addLines_worker, request_iterator, "addLines()")
-        return PROTOCOL.Empty()
+    def addSphere(self, instancing_data, index, sphere:PROTOCOL.SphereParameters, mat_offset:int):
+        colorIdx = self.getColorIdx(sphere)
 
-    def addLines_worker(self):
-        request_iterator = self.request_data
+        if self.report_individual_incoming_items:
+            print(f"Sphere at {self.report_vector(sphere.centre)}"
+                +f"@{sphere.time}, radius={sphere.radius}, colorIdx={colorIdx} (+{mat_offset})")
 
-        for request in request_iterator:
-            srcLevelCol = self.get_client_collection(request.clientID)
-            refLine = bpy.data.objects["refLine"]
-
-            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
-            print(f"Server creates LINES bucket '{request.label}' (ID: {request.bucketID}) for "
-                f"time {request.time} with {len(request.lines)} items.")
-
-            bucketName = f"TP={request.time}"
-            bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
-            if bucketLevelCol is None:
-                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
-
-            shapeRef = BU.add_line_shape_into_that_bucket(request.label, refLine, self.get_main_color_palette_obj(), bucketLevelCol)
-            shapeRef["ID"] = request.bucketID
-
-            data = shapeRef.data
-            data.vertices.add(len(request.lines))
-            for i,line in enumerate(request.lines):
-                if self.report_individual_incoming_items:
-                    print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}, radius={line.radius}, color={BU.integer_to_color(line.colorXRGB)}")
-                data.vertices[i].co.x = line.startPos.x
-                data.vertices[i].co.y = line.startPos.y
-                data.vertices[i].co.z = line.startPos.z
-                data.attributes['start_pos'].data[i].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
-                data.attributes['end_pos'].data[i].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
-                data.attributes['radius'].data[i].value = line.radius
-                r,g,b = BU.integer_to_color(line.colorXRGB)
-                data.attributes['material_idx'].data[i].value = BU.color_to_index(r,g,b)
-
-        self.done_working_with_Blender()
+        instancing_data.vertices[index].co.x = sphere.centre.x
+        instancing_data.vertices[index].co.y = sphere.centre.y
+        instancing_data.vertices[index].co.z = sphere.centre.z
+        instancing_data.attributes['start_pos'].data[index].vector = [0,0,0]
+        instancing_data.attributes['end_pos'].data[index].vector = [0,0,sphere.radius]
+        instancing_data.attributes['time_from'].data[index].value = sphere.time - 0.5
+        instancing_data.attributes['time_to'].data[index].value = sphere.time + 0.5
+        instancing_data.attributes['radius'].data[index].value = sphere.radius
+        instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
 
-    def addVectors(self, request_iterator: PROTOCOL.BucketOfVectors, context):
-        self.submit_work_for_Blender_and_wait(self.addVectors_worker, request_iterator, "addVectors()")
-        return PROTOCOL.Empty()
+    def addLine(self, instancing_data, index, line:PROTOCOL.LineParameters, mat_offset:int):
+        colorIdx = self.getColorIdx(line)
 
-    def addVectors_worker(self):
-        request_iterator = self.request_data
+        if self.report_individual_incoming_items:
+            print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}"
+                +f"@{line.time}, radius={line.radius}, colorIdx={colorIdx} (+{mat_offset})")
 
-        for request in request_iterator:
-            srcLevelCol = self.get_client_collection(request.clientID)
-            refVector = bpy.data.objects["refVector"]
-            refVectorH = refVector.children[0]
+        instancing_data.vertices[index].co.x = line.startPos.x
+        instancing_data.vertices[index].co.y = line.startPos.y
+        instancing_data.vertices[index].co.z = line.startPos.z
+        instancing_data.attributes['start_pos'].data[index].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
+        instancing_data.attributes['end_pos'].data[index].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
+        instancing_data.attributes['time_from'].data[index].value = line.time - 0.5
+        instancing_data.attributes['time_to'].data[index].value = line.time + 0.5
+        instancing_data.attributes['radius'].data[index].value = line.radius
+        instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
-            print(f"Client '{self.report_client(request.clientID)}' requests displaying on server.")
-            print(f"Server creates VECTORS bucket '{request.label}' (ID: {request.bucketID}) for "
-                f"time {request.time} with {len(request.vectors)} items.")
 
-            bucketName = f"TP={request.time}"
-            bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
-            if bucketLevelCol is None:
-                bucketLevelCol = BU.create_new_bucket(bucketName, request.time, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
+    def addVector(self, instancing_data, index, vector:PROTOCOL.VectorParameters, mat_offset:int):
+        colorIdx = self.getColorIdx(vector)
 
-            shapeRef = BU.add_vector_shape_into_that_bucket(request.label, refVector,refVectorH, self.get_main_color_palette_obj(), bucketLevelCol)
-            shapeRef["ID"] = request.bucketID
+        if self.report_individual_incoming_items:
+            print(f"Vector from {self.report_vector(vector.startPos)} to {self.report_vector(vector.endPos)}"
+                +f"@{vector.time}, radius={vector.radius}, colorIdx={colorIdx} (+{mat_offset})")
 
-            data = shapeRef.data
-            data.vertices.add(len(request.vectors))
-            for i,vec in enumerate(request.vectors):
-                if self.report_individual_incoming_items:
-                    print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}, radius={vec.radius}, color={BU.integer_to_color(vec.colorXRGB)}")
-                data.vertices[i].co.x = vec.startPos.x
-                data.vertices[i].co.y = vec.startPos.y
-                data.vertices[i].co.z = vec.startPos.z
-                data.attributes['start_pos'].data[i].vector = [vec.startPos.x,vec.startPos.y,vec.startPos.z]
-                data.attributes['end_pos'].data[i].vector = [vec.endPos.x,vec.endPos.y,vec.endPos.z]
-                data.attributes['radius'].data[i].value = vec.radius
-                r,g,b = BU.integer_to_color(vec.colorXRGB)
-                data.attributes['material_idx'].data[i].value = BU.color_to_index(r,g,b)
+        instancing_data.vertices[index].co.x = vector.startPos.x
+        instancing_data.vertices[index].co.y = vector.startPos.y
+        instancing_data.vertices[index].co.z = vector.startPos.z
+        instancing_data.attributes['start_pos'].data[index].vector = [vector.startPos.x,vector.startPos.y,vector.startPos.z]
+        instancing_data.attributes['end_pos'].data[index].vector = [vector.endPos.x,vector.endPos.y,vector.endPos.z]
+        instancing_data.attributes['time_from'].data[index].value = vector.time - 0.5
+        instancing_data.attributes['time_to'].data[index].value = vector.time + 0.5
+        instancing_data.attributes['radius'].data[index].value = vector.radius
+        instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
-        self.done_working_with_Blender()
+
+    def getColorIdx(self, packet):
+        colorIdx = 0
+        if packet.HasField('colorIdx'):
+            colorIdx = packet.colorIdx
+        else:
+            colorIdx = self.palette.get_index_for_XRGB(packet.colorXRGB)
+        return colorIdx
 
 
     def showMessage(self, request: PROTOCOL.SignedTextMessage, context):
@@ -221,11 +301,11 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         return PROTOCOL.Empty()
 
     def focusEvent(self, request: PROTOCOL.SignedClickedIDs, context):
-        print(f"Client '{self.report_client(request.clientID)}' requests server to focus on IDs: {request.clientClickedIDs.objIDs}")
+        print(f"{self.report_client(request.clientID)} requests server to focus on IDs: {request.clientClickedIDs.objIDs}")
         return PROTOCOL.Empty()
 
     def selectEvent(self, request: PROTOCOL.SignedClickedIDs, context):
-        print(f"Client '{self.report_client(request.clientID)}' requests server to select IDs: {request.clientClickedIDs.objIDs}")
+        print(f"{self.report_client(request.clientID)} requests server to select IDs: {request.clientClickedIDs.objIDs}")
         return PROTOCOL.Empty()
 
 

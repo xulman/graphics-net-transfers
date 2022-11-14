@@ -24,9 +24,8 @@ service ClientToServer {
 	 * within a bucket, only an ID of the bucket is transfered and no IDs
 	 * for the individual instances
 	 */
-	rpc addSpheres (stream BucketOfSpheres) returns (Empty) {}
-	rpc addLines   (stream BucketOfLines  ) returns (Empty) {}
-	rpc addVectors (stream BucketOfVectors) returns (Empty) {}
+	rpc     addGraphics (stream BatchOfGraphics) returns (Empty) {}
+	rpc replaceGraphics (stream BatchOfGraphics) returns (Empty) {}
 
 	rpc showMessage (SignedTextMessage) returns (Empty) {}
 
@@ -35,6 +34,11 @@ service ClientToServer {
 
 	rpc selectEvent   (SignedClickedIDs) returns (Empty) {}
 	rpc unselectEvent (SignedClickedIDs) returns (Empty) {}
+	//unselectAllEvent
+	//selectAllEvent
+
+	//upload (also replaces) color palette (palette_name, [name,r,g,b]+)
+	//delete color palette
 }
 
 
@@ -65,28 +69,27 @@ message ClientHello {
 }
 
 
-message BucketOfSpheres {
+/**
+ * Everything in the batch is treated as one non-dividable entity.
+ * The graphics elements, which is the content of this message, is
+ * indistinguishable among themselves, and it makes no sense to assign them
+ * anything specific to them, anything individual. As a consequence, the
+ * source clientID, dataName, dataID etc. is given for the full batch and is
+ * understood to be valid for its full content, for all graphics element inside.
+ *
+ * In Blender, for example, it appears as one Blender object (listed as
+ * one element in the Outliner panel) that displays its content (which
+ * is the content of this message) using the instancing mechanism.
+ */
+message BatchOfGraphics {
 	ClientIdentification clientID = 1;
-	uint64 bucketID = 2;    // ID in the realm of the source to which the full content of this bucket is associated
-	string label = 3;       // Label printed with this bucket
-	uint64 time = 4;        // Time at which this bucket is visible
-	repeated SphereParameters spheres = 5;
-}
-
-message BucketOfLines {
-	ClientIdentification clientID = 1;
-	uint64 bucketID = 2;    // ID in the realm of the source to which the full content of this bucket is associated
-	string label = 3;       // Label printed with this bucket
-	uint64 time = 4;        // Time at which this bucket is visible
-	repeated LineParameters lines = 5;
-}
-
-message BucketOfVectors {
-	ClientIdentification clientID = 1;
-	uint64 bucketID = 2;    // ID in the realm of the source to which the full content of this bucket is associated
-	string label = 3;       // Label printed with this bucket
-	uint64 time = 4;        // Time at which this bucket is visible
-	repeated VectorParameters vectors = 5;
+	string collectionName  = 2;   // Label/name of this collection
+	string dataName        = 5;   // Label/name of this data group
+	uint64 dataID          = 6;   // ID in the realm of the source
+	//select color palette
+	repeated SphereParameters spheres = 10;
+	repeated LineParameters lines     = 11;
+	repeated VectorParameters vectors = 12;
 }
 
 
@@ -98,22 +101,34 @@ message Vector3D {
 
 message SphereParameters {
 	Vector3D centre  = 1;
-	float radius     = 3;
-	uint32 colorXRGB = 4;
+	uint32 time      = 3;
+	float radius     = 4;
+	oneof color {
+		uint32 colorXRGB = 5;
+		uint32 colorIdx  = 6;
+	}
 }
 
 message LineParameters {
 	Vector3D startPos = 1;
 	Vector3D endPos   = 2;
-	float radius      = 3;
-	uint32 colorXRGB  = 4;
+	uint32 time       = 3;
+	float radius      = 4;
+	oneof color {
+		uint32 colorXRGB = 5;
+		uint32 colorIdx  = 6;
+	}
 }
 
 message VectorParameters {
 	Vector3D startPos = 1;
 	Vector3D endPos   = 2;
-	float radius      = 3;
-	uint32 colorXRGB  = 4;
+	uint32 time       = 3;
+	float radius      = 4;
+	oneof color {
+		uint32 colorXRGB = 5;
+		uint32 colorIdx  = 6;
+	}
 }
 
 
