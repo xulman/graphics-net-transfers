@@ -19,16 +19,21 @@ S: - wants now to create a "(display) server level collection (SLC)" for this cl
    - BUT, should try to "ping" client_URL for a connection test...
 
 
-with every batch of data:
+to display data:
 
-C: - starts by declaring a bucket to be writing into the upcoming graphics
-   - sends client_nickname, bucket_name (plus its ID) and display_time
-   - bucket_name should be rather short!
-	- stream of buckets -- the batch of data to be actually displayed
-	  (buckets we envisioned to be semantically different groups of data)
-	  (a bucket content is technically displayed using the instancing)
+C: - sends batches of graphics
+     - one batch is completely displayed using the instancing
+     - content (individual graphics elements) of one batch is thus indifferent, act as one
+     - every batch belongs to a certain client's collection_name
+     - we envisioned that different client's collections hold semantically different data/graphics
+   - each batch is defined with client_nickname, collection_name (plus its ID)
+   - each batch further contains a stream of spheres, lines and vectors
+   - each graphics element uses xyzt coordinates, rgb color or index to a color palette
 S: - finds SLC matching the client_nickname
      - not found -> reuse-or-create "anonymous/no_feedback" SLC
-   - finds bucket that matches in bucket_name and display_time
+   - finds collection that matches in collection_name and display_time
      - not found -> create a new one
-   - adds (is not overwriting) the display data (spheres, lines or vectors)
+   - adds (not overwrites) the display data (spheres, lines or vectors)
+   - replaces (does overwrite) the display data (spheres, lines or vectors)
+   - (there are two syntactically the same messages, but one appends and one overwrites)
+

@@ -19,19 +19,14 @@ class ClientToServerStub(object):
                 request_serializer=buckets__with__graphics__pb2.ClientHello.SerializeToString,
                 response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
                 )
-        self.addSpheres = channel.stream_unary(
-                '/transfers_graphics_protocol.ClientToServer/addSpheres',
-                request_serializer=buckets__with__graphics__pb2.BucketOfSpheres.SerializeToString,
+        self.addGraphics = channel.stream_unary(
+                '/transfers_graphics_protocol.ClientToServer/addGraphics',
+                request_serializer=buckets__with__graphics__pb2.BatchOfGraphics.SerializeToString,
                 response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
                 )
-        self.addLines = channel.stream_unary(
-                '/transfers_graphics_protocol.ClientToServer/addLines',
-                request_serializer=buckets__with__graphics__pb2.BucketOfLines.SerializeToString,
-                response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
-                )
-        self.addVectors = channel.stream_unary(
-                '/transfers_graphics_protocol.ClientToServer/addVectors',
-                request_serializer=buckets__with__graphics__pb2.BucketOfVectors.SerializeToString,
+        self.replaceGraphics = channel.stream_unary(
+                '/transfers_graphics_protocol.ClientToServer/replaceGraphics',
+                request_serializer=buckets__with__graphics__pb2.BatchOfGraphics.SerializeToString,
                 response_deserializer=buckets__with__graphics__pb2.Empty.FromString,
                 )
         self.showMessage = channel.unary_unary(
@@ -66,45 +61,60 @@ class ClientToServerServicer(object):
 
     def introduceClient(self, request, context):
         """*
-        client should start communication with this message,
-        in this message the client may (not "must") additionally register
-        a call back URL at which the server will be sending notifications
+        Client should start communication with this message.
 
-        if this message is omited, unmatched incoming requests will
-        be placed into "unknown_source" collection
+        In this message the client may (not "must") additionally register
+        a call back URL at which the server will be sending feedback
+        notifications about changes to the displayed graphics, e.g.,
+        color changed, position update, (un)selected, focused etc.
+
+        If this message is omited, unmatched incoming requests will
+        be placed into "unknown_source" collection.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def addSpheres(self, request_iterator, context):
+    def addGraphics(self, request_iterator, context):
         """*
-        one bucket of one-type-of-graphics is requested to be displayed,
-        this request shall contain a burst/batch of instances that all
-        shall appear in this created bucket
+        Several batches of graphics are requested to be displayed.
 
-        since the display need not be able to distinguish among instances
-        within a bucket, only an ID of the bucket is transfered and no IDs
-        for the individual instances
+        One such batch defines graphics instances (spheres, lines, vectors in xyzt)
+        that shall be displayed as one entity, e.g., as one Blender object/node.
+
+        Since the display need not be able to distinguish among instances
+        within the batch, only one ID for the full batch is transfered and,
+        consequently, no IDs for the individual instances are recognized
+        and thus sent over.
+
+        Additionally, each batch must be placed in a particular collection
+        using which clients can be grouping their content, client can create
+        many collections.
+
+        If a name of already existing collection is (re)used, the new content
+        will be added to it. Similarily, if the same batch name is used, the
+        instances will be added to its corresponding entity; even the instances
+        may repeat in which case they will be there just multiple times.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def addLines(self, request_iterator, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def addVectors(self, request_iterator, context):
-        """Missing associated documentation comment in .proto file."""
+    def replaceGraphics(self, request_iterator, context):
+        """*
+        The same as addGraphics() except that when sending content to an
+        already existing batch, the previous content is first cleared before
+        the new (now submitted) one is added.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def showMessage(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """*
+        Asks the receiver to show (not mandated how exactly) the message,
+        e.g., on the console or into a log window.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -141,19 +151,14 @@ def add_ClientToServerServicer_to_server(servicer, server):
                     request_deserializer=buckets__with__graphics__pb2.ClientHello.FromString,
                     response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
             ),
-            'addSpheres': grpc.stream_unary_rpc_method_handler(
-                    servicer.addSpheres,
-                    request_deserializer=buckets__with__graphics__pb2.BucketOfSpheres.FromString,
+            'addGraphics': grpc.stream_unary_rpc_method_handler(
+                    servicer.addGraphics,
+                    request_deserializer=buckets__with__graphics__pb2.BatchOfGraphics.FromString,
                     response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
             ),
-            'addLines': grpc.stream_unary_rpc_method_handler(
-                    servicer.addLines,
-                    request_deserializer=buckets__with__graphics__pb2.BucketOfLines.FromString,
-                    response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
-            ),
-            'addVectors': grpc.stream_unary_rpc_method_handler(
-                    servicer.addVectors,
-                    request_deserializer=buckets__with__graphics__pb2.BucketOfVectors.FromString,
+            'replaceGraphics': grpc.stream_unary_rpc_method_handler(
+                    servicer.replaceGraphics,
+                    request_deserializer=buckets__with__graphics__pb2.BatchOfGraphics.FromString,
                     response_serializer=buckets__with__graphics__pb2.Empty.SerializeToString,
             ),
             'showMessage': grpc.unary_unary_rpc_method_handler(
@@ -209,7 +214,7 @@ class ClientToServer(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def addSpheres(request_iterator,
+    def addGraphics(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -219,14 +224,14 @@ class ClientToServer(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.ClientToServer/addSpheres',
-            buckets__with__graphics__pb2.BucketOfSpheres.SerializeToString,
+        return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.ClientToServer/addGraphics',
+            buckets__with__graphics__pb2.BatchOfGraphics.SerializeToString,
             buckets__with__graphics__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def addLines(request_iterator,
+    def replaceGraphics(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -236,25 +241,8 @@ class ClientToServer(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.ClientToServer/addLines',
-            buckets__with__graphics__pb2.BucketOfLines.SerializeToString,
-            buckets__with__graphics__pb2.Empty.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def addVectors(request_iterator,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.ClientToServer/addVectors',
-            buckets__with__graphics__pb2.BucketOfVectors.SerializeToString,
+        return grpc.experimental.stream_unary(request_iterator, target, '/transfers_graphics_protocol.ClientToServer/replaceGraphics',
+            buckets__with__graphics__pb2.BatchOfGraphics.SerializeToString,
             buckets__with__graphics__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
