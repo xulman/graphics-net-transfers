@@ -4,16 +4,16 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <vector>
 
-#include "points_and_lines.grpc.pb.h"
-#include "points_and_lines.pb.h"
+#include "buckets_with_graphics.grpc.pb.h"
+#include "buckets_with_graphics.pb.h"
 
 // namespace alias
-namespace tgp = transfers_graphics_protocol;
+namespace proto = transfers_graphics_protocol;
 
-// this is where it should be transfered to
-const std::string SERVER_URL = "localhost:9081";
+// this is where it should be transferred to
+const std::string SERVER_URL = "localhost:9083";
+const std::string CLIENT_NAME("demo C++ client");
 
 void print_status_err(const grpc::Status& status) {
 	assert(!status.ok());
@@ -23,75 +23,80 @@ void print_status_err(const grpc::Status& status) {
 	          << "\nDetails: " << status.error_details() << '\n';
 }
 
-void print_point(const tgp::PointAsBall& point) {
-	std::cout << "PointAsBall structure:"
-	          << "\nid: " << point.id() << "\nx: " << point.x()
-	          << "\ny: " << point.y() << "\nz: " << point.z()
-	          << "\nt: " << point.t() << "\nlabel: " << point.label()
-	          << "\ncolor_r: " << point.color_r()
-	          << "\ncolor_g: " << point.color_g()
-	          << "\ncolor_b: " << point.color_b()
-	          << "\nradius: " << point.radius() << '\n';
+void print_sphere(const proto::SphereParameters& sph) {
+	std::cout << "Sphere: [" << sph.centre().x() << "," << sph.centre().y() << "," << sph.centre().z()
+	          << "] @ " << sph.time() << ", radius: " << sph.radius() << '\n';
 }
 
 int main() {
-	// a test point to be transfered over
-	auto point = tgp::PointAsBall();
-
-	point.set_id(10);
-	point.set_x(1.2);
-	point.set_y(1.3);
-	point.set_z(1.4);
-	point.set_t(2);
-	point.set_label("testing point");
-	point.set_color_r(0.9);
-	point.set_color_g(0.1);
-	point.set_color_b(0.05);
-	point.set_radius(3.1);
 
 	// the transfer itself
+	auto stub = proto::ClientToServer::NewStub(
+	    grpc::CreateChannel(SERVER_URL, grpc::InsecureChannelCredentials()) );
 
-	auto stub = tgp::PointsAndLines::NewStub(
-	    grpc::CreateChannel(SERVER_URL, grpc::InsecureChannelCredentials()));
+	//sending batches of graphics (collections of spheres)
+    grpc::ClientContext context;
+    proto::Empty empty;
+    std::unique_ptr< grpc::ClientWriter<proto::BatchOfGraphics> > writer( stub->addGraphics(&context, &empty) );
 
-	std::vector<tgp::PointAsBall> points;
-	for (int i = 0; i < 5; ++i) {
-		point.set_x((i % 50) * 5);
-		point.set_y((i / 50) * 5);
-		point.set_id(i + 10);
-		point.set_label("testing point #" + std::to_string(point.id()));
+    proto::Vector3D refCoord;
+    refCoord.set_x(2.0f);
+    refCoord.set_y(1.1f);
+    refCoord.set_z(20);
 
-		points.push_back(point);
-	}
+	for (int id = 20; id < 25; ++id) {
+        auto batch = proto::BatchOfGraphics();
+        batch.mutable_clientid()->set_clientname(CLIENT_NAME);
+        batch.set_collectionname("default content");
+        batch.set_dataname( std::string("testing batch id ").append( std::to_string(id) ) );
+        batch.set_dataid(id);
 
-	grpc::ClientContext context;
-	tgp::Empty empty;
+        proto::SphereParameters* sph = batch.add_spheres();
+        sph->mutable_centre()->CopyFrom(refCoord);
+        sph->mutable_centre()->set_x(2.0f);
+        sph->mutable_centre()->set_z(float(id));
+        sph->set_time(2);
+        sph->set_radius(0.9f);
+        sph->set_coloridx(1);
+        print_sphere(*sph);
 
-	std::unique_ptr<grpc::ClientWriter<tgp::PointAsBall>> writer(
-	    stub->sendBall(&context, &empty));
+        sph = batch.add_spheres();
+        sph->mutable_centre()->CopyFrom(refCoord);
+        sph->mutable_centre()->set_x(3.0f);
+        sph->mutable_centre()->set_z(float(id));
+        sph->set_time(3);
+        sph->set_radius(0.9f);
+        sph->set_coloridx(1);
+        print_sphere(*sph);
 
-	for (const auto& p : points) {
-		std::cout << "Sending point: \n";
-		print_point(p);
-		std::cout << '\n';
-		if (!writer->Write(p))
-			break; // broken stream
+        proto::VectorParameters* vec = batch.add_vectors();
+        vec->mutable_startpos()->CopyFrom(refCoord);
+        vec->mutable_endpos()->CopyFrom(refCoord);
+        vec->mutable_endpos()->set_z(23);
+        vec->set_time(3);
+        vec->set_radius(2.2);
+        vec->set_coloridx(2);
+
+        if (!writer->Write(batch)) {
+            std::cout << "GRPC failed writing a batch of graphics\n";
+            break; // broken stream
+        }
 	}
 
 	writer->WritesDone();
 	grpc::Status status = writer->Finish();
-
 	if (!status.ok()) {
 		print_status_err(status);
 		return 1;
 	}
 
-	auto msg = tgp::TickMessage();
-	msg.set_message("Demo sent you " + std::to_string(points.size()) +
-	                " items");
 
+	auto msg = proto::SignedTextMessage();
+	msg.mutable_clientid()->set_clientname(CLIENT_NAME);
+	msg.mutable_clientmessage()->set_msg("Demo sent you some items.");
+	//
 	grpc::ClientContext context2;
-	grpc::Status status2 = stub->sendTick(&context2, msg, &empty);
+	grpc::Status status2 = stub->showMessage(&context2, msg, &empty);
 	if (!status2.ok()) {
 		print_status_err(status2);
 		return 1;

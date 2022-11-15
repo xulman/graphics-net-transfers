@@ -3,114 +3,86 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <sstream>
 
-#include "points_and_lines.grpc.pb.h"
-#include "points_and_lines.pb.h"
+#include "buckets_with_graphics.grpc.pb.h"
+#include "buckets_with_graphics.pb.h"
 
 // namespace alias
-namespace tgp = transfers_graphics_protocol;
+namespace proto = transfers_graphics_protocol;
 
 // this is where it should be listening at
-const std::string SERVER_NAME = "demoServer";
-constexpr int SERVER_PORT = 9081;
+constexpr int SERVER_PORT = 9083;
 
-void print_point(const tgp::PointAsBall& point) {
-	std::cout << "PointAsBall structure:"
-	          << "\nid: " << point.id() << "\nx: " << point.x()
-	          << "\ny: " << point.y() << "\nz: " << point.z()
-	          << "\nt: " << point.t() << "\nlabel: " << point.label()
-	          << "\ncolor_r: " << point.color_r()
-	          << "\ncolor_g: " << point.color_g()
-	          << "\ncolor_b: " << point.color_b()
-	          << "\nradius: " << point.radius() << '\n';
+std::string print_coord(const proto::Vector3D& vec) {
+    std::ostringstream oss;
+    oss << "[" << vec.x() << ", " << vec.y() << ", " << vec.z() << "]";
+    return oss.str();
 }
 
-void print_line(const tgp::LineWithPositions& line) {
-	std::cout << "LineWithPosition structure:"
-	          << "\nid: " << line.id() << "\nfrom_x: " << line.from_x()
-	          << "\nfrom_y: " << line.from_y() << "\nfrom_z: " << line.from_z()
-	          << "\nto_x: " << line.to_x() << "\nto_y: " << line.to_y()
-	          << "\nto_z: " << line.to_z() << "\nlabel: " << line.label()
-	          << "\ncolor_r: " << line.color_r()
-	          << "\ncolor_g: " << line.color_g()
-	          << "\ncolor_b: " << line.color_b()
-	          << "\nradius: " << line.radius() << '\n';
-}
-
-void print_line(const tgp::LineWithIDs& line) {
-	std::cout << "LineWithIDs structure:"
-	          << "\nid: " << line.id()
-	          << "\nfrom_pointID: " << line.from_pointid()
-	          << "\nto_pointID: " << line.to_pointid()
-	          << "\nlabel: " << line.label() << "\ncolor_r: " << line.color_r()
-	          << "\ncolor_g; " << line.color_g()
-	          << "\ncolor_b: " << line.color_b()
-	          << "\nradius: " << line.radius() << '\n';
-}
-
-class IncomingPLProcessor final : public tgp::PointsAndLines::Service {
+class IncomingGraphicsProcessor final : public proto::ClientToServer::Service {
   public:
-	grpc::Status sendBall(grpc::ServerContext*,
-	                      grpc::ServerReader<tgp::PointAsBall>* reader,
-	                      tgp::Empty*) override {
+    grpc::Status introduceClient(grpc::ServerContext*,
+                                 const proto::ClientHello* request,
+                                 proto::Empty*) override {
 
-		tgp::PointAsBall point;
-		while (reader->Read(&point)) {
-			std::cout << "Got Ball request with params:\n";
-			print_point(point);
-			std::cout << '\n';
+        std::cout << "Server registers '" << request->clientid().clientname() << "'\n";
+        if (request->returnurl().empty())
+            std::cout << "  -> with NO callback\n";
+        else
+            std::cout << "  -> with callback to >>" << request->returnurl() << "<<\n";
+
+        return grpc::Status::OK;
+    }
+
+	grpc::Status addGraphics(grpc::ServerContext*,
+	                      grpc::ServerReader<proto::BatchOfGraphics>* reader,
+	                      proto::Empty*) override {
+
+		proto::BatchOfGraphics batch;
+		while (reader->Read(&batch)) {
+		    std::cout << "Incoming communication from '" << batch.clientid().clientname()
+                      << "' to display into the collection '" << batch.collectionname() << "'\n";
+            std::cout << "Creating object '" << batch.dataname()
+                      << "' (ID: " << batch.dataid() << ") with "
+                      << batch.spheres_size() << " spheres, "
+                      << batch.lines_size() << " lines and "
+                      << batch.vectors_size() << " vectors.\n";
+
+            for (const auto & sph : batch.spheres()) {
+                std::cout << "Sphere at " << print_coord(sph.centre())
+                          << "@" << sph.time() << ", radius=" << sph.radius() << "\n";
+            }
+            for (const auto & line : batch.lines()) {
+               std::cout << "Line from " << print_coord(line.startpos())
+                         << " to " << print_coord(line.endpos())
+                         << "@" << line.time() << ", radius=" << line.radius() << "\n";
+            }
+            for (const auto & vec : batch.vectors()) {
+                std::cout << "Vector from " << print_coord(vec.startpos())
+                          << " to " << print_coord(vec.endpos())
+                          << "@" << vec.time() << ", radius=" << vec.radius() << "\n";
+            }
 		}
 
 		return grpc::Status::OK;
 	}
 
-	grpc::Status sendEllipsoid(grpc::ServerContext*,
-	                           grpc::ServerReader<tgp::PointAsEllipsoid>*,
-	                           tgp::Empty*) override {
-		std::cout << "Got Ellipsoid request\nAin't touching it now...\n";
-		return grpc::Status::OK;
-	}
 
-	grpc::Status
-	sendLineWithPos(grpc::ServerContext*,
-	                grpc::ServerReader<tgp::LineWithPositions>* reader,
-	                tgp::Empty*) override {
-		tgp::LineWithPositions line;
+    grpc::Status showMessage(grpc::ServerContext*,
+                             const proto::SignedTextMessage* msg,
+                             proto::Empty*) override {
 
-		while (reader->Read(&line)) {
-			std::cout << "Got Line-POS request with params:\n";
-			print_line(line);
-			std::cout << '\n';
-		}
+        std::cout << "Message from '" << msg->clientid().clientname() << "': "
+                  << msg->clientmessage().msg() << "\n";
 
-		return grpc::Status::OK;
-	}
-
-	grpc::Status sendLineWithIDs(grpc::ServerContext*,
-	                             grpc::ServerReader<tgp::LineWithIDs>* reader,
-	                             tgp::Empty*) override {
-		tgp::LineWithIDs line;
-
-		while (reader->Read(&line)) {
-			std::cout << "Got Line-IDs request with params:\n";
-			print_line(line);
-			std::cout << '\n';
-		}
-
-		return grpc::Status::OK;
-	}
-
-	grpc::Status sendTick(grpc::ServerContext*,
-	                      const tgp::TickMessage* msg,
-	                      tgp::Empty*) override {
-		std::cout << "Got tick message: " << msg->message() << '\n';
-		return grpc::Status::OK;
-	}
+        return grpc::Status::OK;
+    }
 };
 
 int main() {
-	std::string server_address = "0.0.0.0:" + std::to_string(SERVER_PORT);
-	IncomingPLProcessor service;
+	const std::string server_address = "0.0.0.0:" + std::to_string(SERVER_PORT);
+	IncomingGraphicsProcessor service;
 
 	grpc::ServerBuilder builder;
 	builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
