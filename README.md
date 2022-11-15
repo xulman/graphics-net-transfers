@@ -131,10 +131,10 @@ cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
 Make sure the `'/path/to'` part of the path above is replaced with a correct one,
 with a path to where your VCPKG installation is.
 
-Cmake will now through `VCPKG` find, download and compile all necessary dependencies.
+Cmake will now through VCPKG find, download and compile all necessary dependencies.
 Because the dependencies (libraries external to this code base) are compiled from source,
 it may take some time. Please be patient. However, this normally happens only once because
-`VCPKG` caches the compiled binaries in its folders...
+VCPKG caches the compiled binaries in its folders...
 
 ### Generate Auxiliary GRPC Files and Compile Demo programs
 After the Cmake configuration and generation is over, run 
