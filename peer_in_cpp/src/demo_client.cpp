@@ -32,7 +32,7 @@ int main() {
 
 	// the transfer itself
 	auto stub = proto::ClientToServer::NewStub(
-	    grpc::CreateChannel(SERVER_URL, grpc::InsecureChannelCredentials()) );
+	       grpc::CreateChannel(SERVER_URL, grpc::InsecureChannelCredentials()) );
 
 	//introduce ourselves
 	proto::ClientHello helloMyNameIsMsg;
@@ -43,52 +43,52 @@ int main() {
 	stub->introduceClient(&context0, helloMyNameIsMsg, &empty0);
 
 	//sending batches of graphics (collections of spheres)
-    grpc::ClientContext context;
-    proto::Empty empty;
-    std::unique_ptr< grpc::ClientWriter<proto::BatchOfGraphics> > writer( stub->addGraphics(&context, &empty) );
+	grpc::ClientContext context;
+	proto::Empty empty;
+	std::unique_ptr< grpc::ClientWriter<proto::BatchOfGraphics> > writer( stub->addGraphics(&context, &empty) );
 
-    proto::Vector3D refCoord;
-    refCoord.set_x(2.0f);
-    refCoord.set_y(1.1f);
-    refCoord.set_z(20);
+	proto::Vector3D refCoord;
+	refCoord.set_x(2.0f);
+	refCoord.set_y(1.1f);
+	refCoord.set_z(20);
 
 	for (int id = 20; id < 25; ++id) {
-        auto batch = proto::BatchOfGraphics();
-        batch.mutable_clientid()->set_clientname(CLIENT_NAME);
-        batch.set_collectionname("default content");
-        batch.set_dataname( std::string("testing batch id ").append( std::to_string(id) ) );
-        batch.set_dataid(id);
+		auto batch = proto::BatchOfGraphics();
+		batch.mutable_clientid()->set_clientname(CLIENT_NAME);
+		batch.set_collectionname("default content");
+		batch.set_dataname( std::string("testing batch id ").append( std::to_string(id) ) );
+		batch.set_dataid(id);
 
-        proto::SphereParameters* sph = batch.add_spheres();
-        sph->mutable_centre()->CopyFrom(refCoord);
-        sph->mutable_centre()->set_x(2.0f);
-        sph->mutable_centre()->set_z(float(id));
-        sph->set_time(2);
-        sph->set_radius(0.9f);
-        sph->set_coloridx(1);
-        print_sphere(*sph);
+		proto::SphereParameters* sph = batch.add_spheres();
+		sph->mutable_centre()->CopyFrom(refCoord);
+		sph->mutable_centre()->set_x(2.0f);
+		sph->mutable_centre()->set_z(float(id));
+		sph->set_time(2);
+		sph->set_radius(0.9f);
+		sph->set_coloridx(1);
+		print_sphere(*sph);
 
-        sph = batch.add_spheres();
-        sph->mutable_centre()->CopyFrom(refCoord);
-        sph->mutable_centre()->set_x(3.0f);
-        sph->mutable_centre()->set_z(float(id));
-        sph->set_time(3);
-        sph->set_radius(0.9f);
-        sph->set_coloridx(1);
-        print_sphere(*sph);
+		sph = batch.add_spheres();
+		sph->mutable_centre()->CopyFrom(refCoord);
+		sph->mutable_centre()->set_x(3.0f);
+		sph->mutable_centre()->set_z(float(id));
+		sph->set_time(3);
+		sph->set_radius(0.9f);
+		sph->set_coloridx(1);
+		print_sphere(*sph);
 
-        proto::VectorParameters* vec = batch.add_vectors();
-        vec->mutable_startpos()->CopyFrom(refCoord);
-        vec->mutable_endpos()->CopyFrom(refCoord);
-        vec->mutable_endpos()->set_z(23);
-        vec->set_time(3);
-        vec->set_radius(2.2);
-        vec->set_coloridx(2);
+		proto::VectorParameters* vec = batch.add_vectors();
+		vec->mutable_startpos()->CopyFrom(refCoord);
+		vec->mutable_endpos()->CopyFrom(refCoord);
+		vec->mutable_endpos()->set_z(23);
+		vec->set_time(3);
+		vec->set_radius(2.2);
+		vec->set_coloridx(2);
 
-        if (!writer->Write(batch)) {
-            std::cout << "GRPC failed writing a batch of graphics\n";
-            break; // broken stream
-        }
+		if (!writer->Write(batch)) {
+			std::cout << "GRPC failed writing a batch of graphics\n";
+			break; // broken stream
+		}
 	}
 
 	writer->WritesDone();
