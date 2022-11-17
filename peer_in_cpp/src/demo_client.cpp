@@ -34,6 +34,14 @@ int main() {
 	auto stub = proto::ClientToServer::NewStub(
 	    grpc::CreateChannel(SERVER_URL, grpc::InsecureChannelCredentials()) );
 
+	//introduce ourselves
+	proto::ClientHello helloMyNameIsMsg;
+	helloMyNameIsMsg.mutable_clientid()->set_clientname(CLIENT_NAME);
+	helloMyNameIsMsg.set_returnurl(""); //means no feedback
+	grpc::ClientContext context0;
+	proto::Empty empty0;
+	stub->introduceClient(&context0, helloMyNameIsMsg, &empty0);
+
 	//sending batches of graphics (collections of spheres)
     grpc::ClientContext context;
     proto::Empty empty;
