@@ -48,6 +48,30 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             self.colored_ref_shapes_col["first vector index"] = l_cnt + s_cnt
 
 
+    def tell_what_to_do_to_change_palette(self):
+        print('from display_server_addon.color_palette import ColorPalette as CP')
+        print('#')
+        print('# create the new palette -- shades of green in this case')
+        print('Pgreen = CP(0,10,0)')
+        print('#')
+        print('# get reference on a hosting empty collection that')
+        print('# will hold this palette\'s shapes and colors objects')
+        print('new_pal_collection = bpy.data.collections[\'Greens\']')
+        print('# make sure props \'first sphere index\', \'first line index\', \'first vector index\' exists,')
+        print('# e.g., new_pal_collection[\'first sphere index\'] gives sensible number')
+        print('#')
+        print('# setup the hosting collection, build ref objects in there')
+        print('Pgreen.create_blender_reference_colored_nodes_into_existing_collection("S", bpy.data.objects[\'refSphere\'], new_pal_collection)')
+        print('new_pal_collection[\'first line index\'] = 0')
+        print('new_pal_collection[\'first vector index\'] = 0')
+        print('new_pal_collection[\'first sphere index\'] = 0')
+        print('#')
+        print('# switch to this palette and "its product" in the running display server')
+        print('bpy.types.Scene.BlenderServerService.palette = Pgreen')
+        print('bpy.types.Scene.BlenderServerService.colored_ref_shapes_col_name = new_pal_collection.name')
+        print('bpy.types.Scene.BlenderServerService.colored_ref_shapes_col = new_pal_collection')
+
+
     def __init__(self, init_everything_now:bool = False):
         # ----- VISIBILITY -----
         # default and immutable state of some reference objects
