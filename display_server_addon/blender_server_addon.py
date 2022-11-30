@@ -26,10 +26,13 @@ serverPort = 9083
 
 class BlenderServerAddon:
     def __init__(self):
+        # record the references on these objects
+        bpy.types.Scene.BlenderServerAddon = self
+        bpy.types.Scene.BlenderServerService = blender_server_service.BlenderServerService()
         # running the server's listening service
         self.server = grpc.server( futures.ThreadPoolExecutor(2,serverName) )
-        buckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(blender_server_service.BlenderServerService(),self.server)
         self.server.add_insecure_port('[::]:%d'%serverPort)
+        buckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(bpy.types.Scene.BlenderServerService,self.server)
         self.server.start()
         print(f"'{serverName}' is ready and listening")
 
