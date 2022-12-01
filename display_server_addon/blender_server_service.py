@@ -228,6 +228,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
+            # NB: get_client_blender_name() is called inside -> client's hash will exist
 
             if self.report_individual_incoming_batches:
                 print(f"Request from {self.report_client(request.clientID)} to display into collection '{request.collectionName}'.")
@@ -235,14 +236,15 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                     f"with {len(request.spheres)} spheres, {len(request.lines)} lines and {len(request.vectors)} vectors.")
 
             clientName = request.clientID.clientName
-            bucketName = f"{request.collectionName} [{clientName}]"
+            clientHash = self.known_clients_hashes.get(clientName)
+            bucketName = request.collectionName[0:58] + clientHash
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
                 bucketLevelCol["from_client"]  = clientName
                 bucketLevelCol["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
-            shapeName = f"{request.dataName} [{bucketName}]"
+            shapeName = request.dataName[0:54] +'_'+ bucketLevelCol["hash"]
             shapeRef = BU.add_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_shapes_col)
             shapeRef["ID"] = request.dataID
             shapeRef["from_client"]  = clientName
