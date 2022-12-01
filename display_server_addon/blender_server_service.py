@@ -2,6 +2,7 @@ from . import buckets_with_graphics_pb2 as PROTOCOL
 from . import buckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
 from . import color_palette as CP
+import secrets
 from threading import Lock
 from time import sleep
 import bpy
@@ -106,6 +107,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.request_callback_routine = None
 
         self.known_clients_retUrls = dict()
+        self.known_clients_hashes = dict()
         self.unknown_client_retUrl = "no callback"
 
 
@@ -180,6 +182,15 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.known_clients_retUrls[clientName] = retURL
 
         self.done_working_with_Blender()
+
+
+    def get_client_blender_name(self, original_client_name:str, force_renew = False) -> str:
+        da_hash = self.known_clients_hashes.get(original_client_name)
+        if da_hash is None or force_renew:
+            # create and register new hash if there was none for this client
+            da_hash = '_' + secrets.token_hex(2)
+            self.known_clients_hashes[original_client_name] = da_hash
+        return original_client_name[0:58] + da_hash
 
 
     def get_client_collection(self, client: PROTOCOL.ClientIdentification):
