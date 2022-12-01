@@ -171,12 +171,13 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         clientNameFixed = self.get_client_blender_name(clientName)
         print(f"Server registers {self.report_client(request.clientID)}...")
         print(f"  ... under name '{clientNameFixed}'")
+
         retURL = request.returnURL
         if retURL is None or retURL == "":
-            print("  -> with NO callback")
+            print("  ... with NO callback")
             retURL = self.unknown_client_retUrl
         else:
-            print(f"  -> with callback to >>{request.returnURL}<<")
+            print(f"  ... with callback to >>{request.returnURL}<<")
 
         srcLevel = BU.get_collection_for_source(clientNameFixed)
         if srcLevel is None:
@@ -185,10 +186,10 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                 print(f"  ... but collection not found, so RE-registering")
                 print(f"  ... under name '{clientNameFixed}'")
             srcLevel = BU.create_new_collection_for_source(clientNameFixed,retURL, hide_position_node = self.hide_reference_position_objects)
+
         srcLevel["created"] = datetime.datetime.now().strftime("%a %D %H:%M:%S")
         srcLevel["from_client"]  = clientName
         srcLevel["feedback_URL"] = retURL
-
         self.known_clients_retUrls[clientName] = retURL
 
         self.done_working_with_Blender()
