@@ -164,7 +164,12 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
     def introduceClient_worker(self):
         request: PROTOCOL.ClientHello = self.request_data
 
-        print(f"Server registers {self.report_client(request.clientID)}")
+        clientName = request.clientID.clientName
+        clientSeenBefore = clientName in self.known_clients_hashes
+
+        clientNameFixed = self.get_client_blender_name(clientName)
+        print(f"Server registers {self.report_client(request.clientID)}...")
+        print(f"  ... under name '{clientNameFixed}'")
         retURL = request.returnURL
         if retURL is None or retURL == "":
             print("  -> with NO callback")
@@ -172,10 +177,13 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         else:
             print(f"  -> with callback to >>{request.returnURL}<<")
 
-        clientName = request.clientID.clientName
-        srcLevel = BU.get_collection_for_source(clientName)
+        srcLevel = BU.get_collection_for_source(clientNameFixed)
         if srcLevel is None:
-            srcLevel = BU.create_new_collection_for_source(clientName,retURL, hide_position_node = self.hide_reference_position_objects)
+            if clientSeenBefore:
+                clientNameFixed = self.get_client_blender_name(clientName,force_renew=True)
+                print(f"  ... but collection not found, so RE-registering")
+                print(f"  ... under name '{clientNameFixed}'")
+            srcLevel = BU.create_new_collection_for_source(clientNameFixed,retURL, hide_position_node = self.hide_reference_position_objects)
         srcLevel["from_client"]  = clientName
         srcLevel["feedback_URL"] = retURL
 
@@ -194,7 +202,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
 
     def get_client_collection(self, client: PROTOCOL.ClientIdentification):
-        clientName = client.clientName
+        clientName = self.get_client_blender_name(client.clientName)
         srcLevel = BU.get_collection_for_source(clientName)
         if srcLevel is None:
             srcLevel = BU.get_collection_for_source("anonymous")
