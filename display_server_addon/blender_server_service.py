@@ -3,6 +3,7 @@ from . import buckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
 from . import color_palette as CP
 import secrets
+import datetime
 from threading import Lock
 from time import sleep
 import bpy
@@ -184,6 +185,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                 print(f"  ... but collection not found, so RE-registering")
                 print(f"  ... under name '{clientNameFixed}'")
             srcLevel = BU.create_new_collection_for_source(clientNameFixed,retURL, hide_position_node = self.hide_reference_position_objects)
+        srcLevel["created"] = datetime.datetime.now().strftime("%a %D %H:%M:%S")
         srcLevel["from_client"]  = clientName
         srcLevel["feedback_URL"] = retURL
 
