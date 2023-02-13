@@ -69,7 +69,7 @@ class ServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
 def main() -> None:
     try:
         # running the server's listening service
-        serv = server( futures.ThreadPoolExecutor(2,serverName) )
+        serv = server( futures.ThreadPoolExecutor(2,serverName), maximum_concurrent_rpcs=5 )
         buckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(ServerService(),serv)
         serv.add_insecure_port('[::]:%d'%serverPort)
 
