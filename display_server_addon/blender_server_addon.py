@@ -41,6 +41,10 @@ class BlenderServerAddon:
         self.server.start()
         print(f"'{defaultServerName}' is ready and listening at {url}")
 
+    def restart_with_new_service(self, bind = defaultServerBind, port = defaultServerPort):
+        bpy.types.Scene.BlenderServerService = blender_server_service.BlenderServerService()
+        self.restart(bind, port)
+
     def stop(self):
         print(f"'{defaultServerName}' is stopping")
         self.server.stop(None)
