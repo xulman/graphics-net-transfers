@@ -20,21 +20,29 @@ import bpy
 from . import buckets_with_graphics_pb2_grpc
 from . import blender_server_service
 
-serverName = "Blender DisplayServer"
-serverPort = 9083
+defaultServerName = "Blender DisplayServer"
+defaultServerBind = '[::]'
+defaultServerPort = 9083
 
 
 class BlenderServerAddon:
     def __init__(self):
+        # record the references on these objects
+        bpy.types.Scene.BlenderServerAddon = self
+        bpy.types.Scene.BlenderServerService = blender_server_service.BlenderServerService()
+        self.restart()
+
+    def restart(self, bind = defaultServerBind, port = defaultServerPort):
         # running the server's listening service
-        self.server = grpc.server( futures.ThreadPoolExecutor(2,serverName) )
-        buckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(blender_server_service.BlenderServerService(),self.server)
-        self.server.add_insecure_port('[::]:%d'%serverPort)
+        self.server = grpc.server( futures.ThreadPoolExecutor(2,defaultServerName) )
+        buckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(bpy.types.Scene.BlenderServerService,self.server)
+        url = f"{bind}:{port}"
+        self.server.add_insecure_port(url)
         self.server.start()
-        print(f"'{serverName}' is ready and listening")
+        print(f"'{defaultServerName}' is ready and listening at {url}")
 
     def stop(self):
-        print(f"'{serverName}' is stopping")
+        print(f"'{defaultServerName}' is stopping")
         self.server.stop(None)
 
 

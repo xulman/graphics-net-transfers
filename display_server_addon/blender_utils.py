@@ -120,6 +120,8 @@ def add_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_shapes_col
     # object to with reference coordinates frame
     ref_point_for_bucket = bucket_col_ref.objects[0]
 
+    print(f"adding instances behind {node_name} w.r.t. pos_obj {ref_point_for_bucket}, shape_colors_col {colored_shapes_col_ref}")
+
     # setup Geometry Nodes
     gn = shape_node.modifiers.new("Generic instancing of shapes","NODES")
     gn.node_group = bpy.data.objects['gnHolder'].modifiers['GeometryNodes'].node_group
