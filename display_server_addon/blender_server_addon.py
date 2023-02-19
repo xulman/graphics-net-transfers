@@ -33,13 +33,26 @@ class BlenderServerAddon:
         self.restart()
 
     def restart(self, bind = defaultServerBind, port = defaultServerPort):
-        # running the server's listening service
-        self.server = grpc.server( futures.ThreadPoolExecutor(2,defaultServerName) )
+        # running the server's listening service at a limited parallelism:
+        # this setting enables up to 2 simultaneously processed incoming messages,
+        # while the system allows to have 3 more (5 in total) pending in the incoming
+        # ring, any 6th message will be refused and returned to the sender with
+        # RPC status saying "resource is busy"; it doesn't bring any advantage to
+        # allow more messages to be simultaneously processed because their processing
+        # must inevitably serialize because Blender works in one thread, consequently
+        # we want to warn early (and thus keep the number of pending messages low) any
+        # future senders when the system (this server) is lacking behind the processing
+        # of incoming traffic
+        self.server = grpc.server( futures.ThreadPoolExecutor(2,defaultServerName), maximum_concurrent_rpcs=5 )
         buckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(bpy.types.Scene.BlenderServerService,self.server)
         url = f"{bind}:{port}"
         self.server.add_insecure_port(url)
         self.server.start()
         print(f"'{defaultServerName}' is ready and listening at {url}")
+
+    def restart_with_new_service(self, bind = defaultServerBind, port = defaultServerPort):
+        bpy.types.Scene.BlenderServerService = blender_server_service.BlenderServerService()
+        self.restart(bind, port)
 
     def stop(self):
         print(f"'{defaultServerName}' is stopping")

@@ -2,6 +2,7 @@ from . import buckets_with_graphics_pb2 as PROTOCOL
 from . import buckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
 from . import color_palette as CP
+import grpc
 import secrets
 import datetime
 from threading import Lock
@@ -130,7 +131,17 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
     def runs_when_blender_allows(self):
         if self.stop_and_wait_for_the_first_actual_use:
             self.do_postponed_initialization()
-        self.request_callback_routine()
+        if self.request_callback_routine is not None:
+            try:
+                self.request_callback_routine()
+            except grpc.RpcError as error:
+                print("INCOMING DATA PROCESSING: ERROR, STOPPED with the message:")
+                print(error.args)
+            else:
+                print("INCOMING DATA PROCESSING: FINISHED HAPPILY")
+        else:
+            print("INCOMING DATA PROCESSING: ERROR, APPROPRIATE HANDLER IS ABSENT")
+
 
     def submit_work_for_Blender_and_wait(self, code, data, reports_name: str):
         if self.report_also_repeating_debug_messages:
@@ -156,6 +167,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
     def done_working_with_Blender(self):
         self.request_callback_is_running = False
+        self.request_callback_routine = None
 
 
     def introduceClient(self, request: PROTOCOL.ClientHello, context):
