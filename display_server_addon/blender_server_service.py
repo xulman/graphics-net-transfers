@@ -2,6 +2,8 @@ from . import buckets_with_graphics_pb2 as PROTOCOL
 from . import buckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
 from . import color_palette as CP
+import secrets
+import datetime
 from threading import Lock
 from time import sleep
 import bpy
@@ -106,6 +108,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.request_callback_routine = None
 
         self.known_clients_retUrls = dict()
+        self.known_clients_hashes = dict()
         self.unknown_client_retUrl = "no callback"
 
 
@@ -162,28 +165,47 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
     def introduceClient_worker(self):
         request: PROTOCOL.ClientHello = self.request_data
 
-        print(f"Server registers {self.report_client(request.clientID)}")
+        clientName = request.clientID.clientName
+        clientSeenBefore = clientName in self.known_clients_hashes
+
+        clientNameFixed = self.get_client_blender_name(clientName)
+        print(f"Server registers {self.report_client(request.clientID)}...")
+        print(f"  ... under name '{clientNameFixed}'")
+
         retURL = request.returnURL
         if retURL is None or retURL == "":
-            print("  -> with NO callback")
+            print("  ... with NO callback")
             retURL = self.unknown_client_retUrl
         else:
-            print(f"  -> with callback to >>{request.returnURL}<<")
+            print(f"  ... with callback to >>{request.returnURL}<<")
 
-        clientName = request.clientID.clientName
-        srcLevel = BU.get_collection_for_source(clientName)
+        srcLevel = BU.get_collection_for_source(clientNameFixed)
         if srcLevel is None:
-            srcLevel = BU.create_new_collection_for_source(clientName,retURL, hide_position_node = self.hide_reference_position_objects)
+            if clientSeenBefore:
+                clientNameFixed = self.get_client_blender_name(clientName,force_renew=True)
+                print(f"  ... but collection not found, so RE-registering")
+                print(f"  ... under name '{clientNameFixed}'")
+            srcLevel = BU.create_new_collection_for_source(clientNameFixed,retURL, hide_position_node = self.hide_reference_position_objects)
+
+        srcLevel["created"] = datetime.datetime.now().strftime("%a %D %H:%M:%S")
         srcLevel["from_client"]  = clientName
         srcLevel["feedback_URL"] = retURL
-
         self.known_clients_retUrls[clientName] = retURL
 
         self.done_working_with_Blender()
 
 
+    def get_client_blender_name(self, original_client_name:str, force_renew = False) -> str:
+        da_hash = self.known_clients_hashes.get(original_client_name)
+        if da_hash is None or force_renew:
+            # create and register new hash if there was none for this client
+            da_hash = '_' + secrets.token_hex(2)
+            self.known_clients_hashes[original_client_name] = da_hash
+        return original_client_name[0:58] + da_hash
+
+
     def get_client_collection(self, client: PROTOCOL.ClientIdentification):
-        clientName = client.clientName
+        clientName = self.get_client_blender_name(client.clientName)
         srcLevel = BU.get_collection_for_source(clientName)
         if srcLevel is None:
             srcLevel = BU.get_collection_for_source("anonymous")
@@ -209,6 +231,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
+            # NB: get_client_blender_name() is called inside -> client's hash will exist
 
             if self.report_individual_incoming_batches:
                 print(f"Request from {self.report_client(request.clientID)} to display into collection '{request.collectionName}'.")
@@ -216,14 +239,15 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                     f"with {len(request.spheres)} spheres, {len(request.lines)} lines and {len(request.vectors)} vectors.")
 
             clientName = request.clientID.clientName
-            bucketName = f"{request.collectionName} [{clientName}]"
+            clientHash = self.known_clients_hashes.get(clientName)
+            bucketName = request.collectionName[0:58] + clientHash
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
                 bucketLevelCol["from_client"]  = clientName
                 bucketLevelCol["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
-            shapeName = f"{request.dataName} [{bucketName}]"
+            shapeName = request.dataName[0:54] +'_'+ bucketLevelCol["hash"]
             shapeRef = BU.add_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_shapes_col)
             shapeRef["ID"] = request.dataID
             shapeRef["from_client"]  = clientName
