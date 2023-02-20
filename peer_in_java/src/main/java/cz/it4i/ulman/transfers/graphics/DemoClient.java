@@ -2,6 +2,7 @@ package cz.it4i.ulman.transfers.graphics;
 
 import cz.it4i.ulman.transfers.graphics.protocol.BucketsWithGraphics;
 import cz.it4i.ulman.transfers.graphics.protocol.ClientToServerGrpc;
+import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -93,8 +94,8 @@ public class DemoClient {
 			submittingStream.onCompleted();
 
 			System.out.println("Waiting for the delivery before exit");
-			Thread.sleep(500);
-			System.out.println("Tired of waiting... giving up.");
+			closeChannel(channel);
+			System.out.println("Exiting...");
 
 		} catch (StatusRuntimeException e) {
 			LOGGER.warning("RPC client-side failed, details follow:");
@@ -103,7 +104,36 @@ public class DemoClient {
 			// ManagedChannels use resources like threads and TCP connections. To prevent leaking these
 			// resources the channel should be shut down when it will no longer be used. If it may be used
 			// again leave it running.
-			channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+			//channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+			closeChannel(channel,0,2);
 		}
+	}
+
+
+	public static void closeChannel(final ManagedChannel channel)
+	throws InterruptedException {
+		closeChannel(channel, 15, 2);
+	}
+
+	public static void closeChannel(final ManagedChannel channel,
+	                                final int halfOfMaxWaitTimeInSeconds,
+	                                final int checkingPeriodInSeconds)
+	throws InterruptedException {
+		//first, make sure the channel describe itself as "READY"
+		int timeSpentWaiting = 0;
+		while (channel.getState(false) != ConnectivityState.READY && timeSpentWaiting < halfOfMaxWaitTimeInSeconds) {
+			timeSpentWaiting += checkingPeriodInSeconds;
+			Thread.sleep(checkingPeriodInSeconds * 1000L); //seconds -> milis
+		}
+		//but even when it claims "READY", it still needs some grace time to finish any commencing transfers;
+		//request it to stop whenever it can, then keep asking when it's done
+		channel.shutdown();
+		timeSpentWaiting = 0;
+		while (!channel.isTerminated() && timeSpentWaiting < halfOfMaxWaitTimeInSeconds) {
+			timeSpentWaiting += checkingPeriodInSeconds;
+			Thread.sleep(checkingPeriodInSeconds * 1000L); //seconds -> milis
+		}
+		//last few secs extra before a hard stop (if it is still not yet closed gracefully)
+		channel.awaitTermination(checkingPeriodInSeconds, TimeUnit.SECONDS);
 	}
 }
