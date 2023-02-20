@@ -18,7 +18,7 @@ public class DemoClient {
 	 * greeting. The second argument is the target server.
 	 */
 	public static void main(String[] args) throws Exception {
-		// Access a service running on the local machine on port 7000
+		// Access a service running on the local machine on port 9083
 		String target = "localhost:9083";
 
 		// Create a communication channel to the server, known as a Channel. Channels are thread-safe
@@ -29,12 +29,23 @@ public class DemoClient {
 			.build();
 
 		try {
+			//advanced comm "channels" for small (blocking) and potentially large (continuous) messages
+			final ClientToServerGrpc.ClientToServerBlockingStub commBlocking = ClientToServerGrpc.newBlockingStub(channel);
 			final ClientToServerGrpc.ClientToServerStub comm = ClientToServerGrpc.newStub(channel);
 
 			final BucketsWithGraphics.ClientIdentification clientIdentification
 				= BucketsWithGraphics.ClientIdentification.newBuilder()
 					.setClientName("demo Java client")
 					.build();
+
+
+			//setup and send the introduction message first,
+			//this is a mandatory step!
+			final BucketsWithGraphics.ClientHello helloMyNameIsMsg = BucketsWithGraphics.ClientHello.newBuilder()
+					.setClientID(clientIdentification)
+					.setReturnURL("no feedback")
+					.build();
+			commBlocking.introduceClient(helloMyNameIsMsg);
 
 			final BucketsWithGraphics.Vector3D.Builder templateSphereCentre = BucketsWithGraphics.Vector3D.newBuilder();
 			templateSphereCentre.setX(0.f).setY(1.1f).setZ(1.2f);
