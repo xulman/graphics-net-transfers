@@ -31,8 +31,9 @@ public class DemoClient {
 		try {
 			//advanced comm "channels" for small (blocking) and potentially large (continuous) messages
 			final ClientToServerGrpc.ClientToServerBlockingStub commBlocking = ClientToServerGrpc.newBlockingStub(channel);
-			final ClientToServerGrpc.ClientToServerStub comm = ClientToServerGrpc.newStub(channel);
+			final ClientToServerGrpc.ClientToServerStub commContinuous = ClientToServerGrpc.newStub(channel);
 
+			//this obj will be re-used in fact in any outgoing message
 			final BucketsWithGraphics.ClientIdentification clientIdentification
 				= BucketsWithGraphics.ClientIdentification.newBuilder()
 					.setClientName("demo Java client")
@@ -47,18 +48,22 @@ public class DemoClient {
 					.build();
 			commBlocking.introduceClient(helloMyNameIsMsg);
 
+
+			//a template data structure for Vector3D (used, e.g., for coordinates of centres of spheres)
 			final BucketsWithGraphics.Vector3D.Builder templateSphereCentre = BucketsWithGraphics.Vector3D.newBuilder();
 			templateSphereCentre.setX(0.f).setY(1.1f).setZ(1.2f);
 			//
+			//a template for a full sphere
 			final BucketsWithGraphics.SphereParameters.Builder templateSphere
 				= BucketsWithGraphics.SphereParameters.newBuilder()
 					.setTime(1)
 					.setRadius(0.9f)
 					.setColorIdx(1);
 
-			StreamObserver<BucketsWithGraphics.BatchOfGraphics> requestStream = comm.addGraphics(new EmptyIgnoringStreamObservers());
+
+			StreamObserver<BucketsWithGraphics.BatchOfGraphics> submittingStream = commContinuous.addGraphics(new EmptyIgnoringStreamObservers());
 			for (int id = 20; id < 25; ++id) {
-				BucketsWithGraphics.BatchOfGraphics.Builder bInProgress = BucketsWithGraphics.BatchOfGraphics.newBuilder()
+				BucketsWithGraphics.BatchOfGraphics.Builder batchBuilder = BucketsWithGraphics.BatchOfGraphics.newBuilder()
 						.setClientID(clientIdentification)
 						.setCollectionName("default content")
 						.setDataName("testing batch id "+id)
@@ -68,24 +73,24 @@ public class DemoClient {
 				templateSphereCentre.setZ(id);
 				templateSphere.setTime(2);
 				templateSphere.setCentre( templateSphereCentre ); //only now the instantiation/building takes place
-				bInProgress.addSpheres( templateSphere );
+				batchBuilder.addSpheres( templateSphere );
 
 				templateSphereCentre.setX(3.f);
 				templateSphere.setTime(3);
 				templateSphere.setCentre( templateSphereCentre ); //only now the instantiation/building takes place
-				bInProgress.addSpheres( templateSphere );
+				batchBuilder.addSpheres( templateSphere );
 
 				templateSphereCentre.setX(4.f);
 				templateSphere.setTime(4);
 				templateSphere.setCentre( templateSphereCentre ); //only now the instantiation/building takes place
-				bInProgress.addSpheres( templateSphere );
+				batchBuilder.addSpheres( templateSphere );
 
-				final BucketsWithGraphics.BatchOfGraphics b = bInProgress.build();
+				final BucketsWithGraphics.BatchOfGraphics b = batchBuilder.build();
 				LOGGER.info("Sending point: ");
 				LOGGER.info( b.toString() );
-				requestStream.onNext(b);
+				submittingStream.onNext(b);
 			}
-			requestStream.onCompleted();
+			submittingStream.onCompleted();
 
 			System.out.println("Waiting for the delivery before exit");
 			Thread.sleep(500);
