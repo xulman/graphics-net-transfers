@@ -2,6 +2,9 @@ from . import buckets_with_graphics_pb2 as PROTOCOL
 from . import buckets_with_graphics_pb2_grpc
 from . import blender_utils as BU
 from . import color_palette as CP
+import grpc
+import secrets
+import datetime
 from threading import Lock
 from time import sleep
 import bpy
@@ -48,6 +51,30 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             self.colored_ref_shapes_col["first vector index"] = l_cnt + s_cnt
 
 
+    def tell_what_to_do_to_change_palette(self):
+        print('from display_server_addon.color_palette import ColorPalette as CP')
+        print('#')
+        print('# create the new palette -- shades of green in this case')
+        print('Pgreen = CP(0,10,0)')
+        print('#')
+        print('# get reference on a hosting empty collection that')
+        print('# will hold this palette\'s shapes and colors objects')
+        print('new_pal_collection = bpy.data.collections[\'Greens\']')
+        print('# make sure props \'first sphere index\', \'first line index\', \'first vector index\' exists,')
+        print('# e.g., new_pal_collection[\'first sphere index\'] gives sensible number')
+        print('#')
+        print('# setup the hosting collection, build ref objects in there')
+        print('Pgreen.create_blender_reference_colored_nodes_into_existing_collection("S", bpy.data.objects[\'refSphere\'], new_pal_collection)')
+        print('new_pal_collection[\'first line index\'] = 0')
+        print('new_pal_collection[\'first vector index\'] = 0')
+        print('new_pal_collection[\'first sphere index\'] = 0')
+        print('#')
+        print('# switch to this palette and "its product" in the running display server')
+        print('bpy.types.Scene.BlenderServerService.palette = Pgreen')
+        print('bpy.types.Scene.BlenderServerService.colored_ref_shapes_col_name = new_pal_collection.name')
+        print('bpy.types.Scene.BlenderServerService.colored_ref_shapes_col = new_pal_collection')
+
+
     def __init__(self, init_everything_now:bool = False):
         # ----- VISIBILITY -----
         # default and immutable state of some reference objects
@@ -82,6 +109,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.request_callback_routine = None
 
         self.known_clients_retUrls = dict()
+        self.known_clients_hashes = dict()
         self.unknown_client_retUrl = "no callback"
 
 
@@ -103,7 +131,17 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
     def runs_when_blender_allows(self):
         if self.stop_and_wait_for_the_first_actual_use:
             self.do_postponed_initialization()
-        self.request_callback_routine()
+        if self.request_callback_routine is not None:
+            try:
+                self.request_callback_routine()
+            except grpc.RpcError as error:
+                print("INCOMING DATA PROCESSING: ERROR, STOPPED with the message:")
+                print(error.args)
+            else:
+                print("INCOMING DATA PROCESSING: FINISHED HAPPILY")
+        else:
+            print("INCOMING DATA PROCESSING: ERROR, APPROPRIATE HANDLER IS ABSENT")
+
 
     def submit_work_for_Blender_and_wait(self, code, data, reports_name: str):
         if self.report_also_repeating_debug_messages:
@@ -129,6 +167,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
     def done_working_with_Blender(self):
         self.request_callback_is_running = False
+        self.request_callback_routine = None
 
 
     def introduceClient(self, request: PROTOCOL.ClientHello, context):
@@ -138,28 +177,47 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
     def introduceClient_worker(self):
         request: PROTOCOL.ClientHello = self.request_data
 
-        print(f"Server registers {self.report_client(request.clientID)}")
+        clientName = request.clientID.clientName
+        clientSeenBefore = clientName in self.known_clients_hashes
+
+        clientNameFixed = self.get_client_blender_name(clientName)
+        print(f"Server registers {self.report_client(request.clientID)}...")
+        print(f"  ... under name '{clientNameFixed}'")
+
         retURL = request.returnURL
         if retURL is None or retURL == "":
-            print("  -> with NO callback")
+            print("  ... with NO callback")
             retURL = self.unknown_client_retUrl
         else:
-            print(f"  -> with callback to >>{request.returnURL}<<")
+            print(f"  ... with callback to >>{request.returnURL}<<")
 
-        clientName = request.clientID.clientName
-        srcLevel = BU.get_collection_for_source(clientName)
+        srcLevel = BU.get_collection_for_source(clientNameFixed)
         if srcLevel is None:
-            srcLevel = BU.create_new_collection_for_source(clientName,retURL, hide_position_node = self.hide_reference_position_objects)
+            if clientSeenBefore:
+                clientNameFixed = self.get_client_blender_name(clientName,force_renew=True)
+                print(f"  ... but collection not found, so RE-registering")
+                print(f"  ... under name '{clientNameFixed}'")
+            srcLevel = BU.create_new_collection_for_source(clientNameFixed,retURL, hide_position_node = self.hide_reference_position_objects)
+
+        srcLevel["created"] = datetime.datetime.now().strftime("%a %D %H:%M:%S")
         srcLevel["from_client"]  = clientName
         srcLevel["feedback_URL"] = retURL
-
         self.known_clients_retUrls[clientName] = retURL
 
         self.done_working_with_Blender()
 
 
+    def get_client_blender_name(self, original_client_name:str, force_renew = False) -> str:
+        da_hash = self.known_clients_hashes.get(original_client_name)
+        if da_hash is None or force_renew:
+            # create and register new hash if there was none for this client
+            da_hash = '_' + secrets.token_hex(2)
+            self.known_clients_hashes[original_client_name] = da_hash
+        return original_client_name[0:58] + da_hash
+
+
     def get_client_collection(self, client: PROTOCOL.ClientIdentification):
-        clientName = client.clientName
+        clientName = self.get_client_blender_name(client.clientName)
         srcLevel = BU.get_collection_for_source(clientName)
         if srcLevel is None:
             srcLevel = BU.get_collection_for_source("anonymous")
@@ -185,6 +243,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         for request in request_iterator:
             srcLevelCol = self.get_client_collection(request.clientID)
+            # NB: get_client_blender_name() is called inside -> client's hash will exist
 
             if self.report_individual_incoming_batches:
                 print(f"Request from {self.report_client(request.clientID)} to display into collection '{request.collectionName}'.")
@@ -192,14 +251,15 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                     f"with {len(request.spheres)} spheres, {len(request.lines)} lines and {len(request.vectors)} vectors.")
 
             clientName = request.clientID.clientName
-            bucketName = f"{request.collectionName} [{clientName}]"
+            clientHash = self.known_clients_hashes.get(clientName)
+            bucketName = request.collectionName[0:58] + clientHash
             bucketLevelCol = BU.get_bucket_in_this_source_collection(bucketName, srcLevelCol)
             if bucketLevelCol is None:
                 bucketLevelCol = BU.create_new_bucket(bucketName, srcLevelCol, hide_position_node = self.hide_reference_position_objects)
                 bucketLevelCol["from_client"]  = clientName
                 bucketLevelCol["feedback_URL"] = self.known_clients_retUrls.get(clientName, self.unknown_client_retUrl)
 
-            shapeName = f"{request.dataName} [{bucketName}]"
+            shapeName = request.dataName[0:54] +'_'+ bucketLevelCol["hash"]
             shapeRef = BU.add_shape_into_that_bucket(shapeName, bucketLevelCol, self.colored_ref_shapes_col)
             shapeRef["ID"] = request.dataID
             shapeRef["from_client"]  = clientName

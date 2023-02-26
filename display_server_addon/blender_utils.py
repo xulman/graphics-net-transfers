@@ -1,4 +1,5 @@
 import bpy
+import secrets
 
 
 def move_obj_into_this_collection(obj, destination_col):
@@ -45,7 +46,7 @@ def create_new_collection_for_source(source_name:str, source_URL:str, hide_posit
     ref_obj = get_new_ref_position_cube_obj()
     new_src_col.objects.link(ref_obj)
     #
-    ref_obj.name = "COORDINATES FRAME for "+source_name
+    ref_obj.name = "COORDINATES FRAME for source "+source_name[-4:]
     ref_obj.hide_set(hide_position_node)
 
     return new_src_col
@@ -57,7 +58,9 @@ def get_collection_for_source(source_name:str):
 
 def create_new_bucket(bucket_name:str, source_col_ref, hide_position_node = False):
     # create a new collection
+    daHash = secrets.token_hex(4)
     new_col = bpy.data.collections.new(bucket_name)
+    new_col["hash"] = daHash
 
     # link to (hook under) the given Source collection
     source_col_ref.children.link(new_col)
@@ -66,7 +69,7 @@ def create_new_bucket(bucket_name:str, source_col_ref, hide_position_node = Fals
     ref_obj = get_new_ref_position_cube_obj()
     new_col.objects.link(ref_obj)
     #
-    ref_obj.name = "COORDINATES FRAME for "+bucket_name
+    ref_obj.name = "COORDINATES FRAME for group " + daHash
     ref_obj.parent = source_col_ref.objects[0]
     ref_obj.hide_set(hide_position_node)
 
@@ -117,8 +120,12 @@ def add_shape_into_that_bucket(node_name:str, bucket_col_ref, colored_shapes_col
     shape_node = setup_empty_pointcloud_into_this_bucket(node_name, bucket_col_ref)
     introduce_attributes_for_protocol_data(shape_node)
 
-    # object to with reference coordinates frame
+    # object with reference coordinates frame
     ref_point_for_bucket = bucket_col_ref.objects[0]
+
+    print(f"adding instances behind {node_name} w.r.t. pos_obj '{ref_point_for_bucket.name}'"
+        f" at {hex(id(ref_point_for_bucket))}, shape_colors_col '{colored_shapes_col_ref.name}'"
+        f" at {hex(id(colored_shapes_col_ref))}")
 
     # setup Geometry Nodes
     gn = shape_node.modifiers.new("Generic instancing of shapes","NODES")

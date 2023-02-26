@@ -3,6 +3,7 @@ from concurrent import futures
 from time import sleep
 import buckets_with_graphics_pb2 as PROTOCOL
 import buckets_with_graphics_pb2_grpc
+import threading
 
 # this is where it should be listening at
 serverName = "fakeBlenderServer"
@@ -15,7 +16,8 @@ class ServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
         return f"[{vec.x},{vec.y},{vec.z}]"
 
     def introduceClient(self, request: PROTOCOL.ClientHello, context):
-        print(f"Server registers {self.report_client(request.clientID)}")
+        print(f"Server {threading.get_native_id()} registers {self.report_client(request.clientID)}")
+
         retURL = request.returnURL
         if retURL is None or retURL == "":
             print("  -> with NO callback")
@@ -30,7 +32,7 @@ class ServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
 
     def addGraphics(self, request_iterator: PROTOCOL.BatchOfGraphics, context):
         for request in request_iterator:
-            print(f"Request from {self.report_client(request.clientID)} to display into collection '{request.collectionName}'.")
+            print(f"Request {threading.get_native_id()} from {self.report_client(request.clientID)} to display into collection '{request.collectionName}'.")
             print(f"Server creates object '{request.dataName}' (ID: {request.dataID}) "
                 f"with {len(request.spheres)} spheres, {len(request.lines)} lines and {len(request.vectors)} vectors.")
 
@@ -69,7 +71,7 @@ class ServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
 def main() -> None:
     try:
         # running the server's listening service
-        serv = server( futures.ThreadPoolExecutor(2,serverName) )
+        serv = server( futures.ThreadPoolExecutor(2,serverName), maximum_concurrent_rpcs=5 )
         buckets_with_graphics_pb2_grpc.add_ClientToServerServicer_to_server(ServerService(),serv)
         serv.add_insecure_port('[::]:%d'%serverPort)
 
