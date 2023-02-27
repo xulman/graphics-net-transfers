@@ -10,6 +10,9 @@ It attempts to mirror [this](https://docs.google.com/document/d/1n-ctWjGaVLyosTd
 and mainly [this](https://github.com/xulman/graphics-net-transfers/blob/master/docs/blender_ideas.pdf)
 with this [communication protocol.](https://github.com/xulman/graphics-net-transfers/blob/master/protocol_specification/buckets_with_graphics.proto)
 
+# Is it used anywhere?
+- Connecting [Mastodon](https://mastodon.readthedocs.io/en/latest/) using [this repo](https://github.com/mastodon-sc/mastodon-ext-viewers) to [Blender](https://www.blender.org/)
+- Connecting [EmbryoGen](https://github.com/xulman/EmbryoGen) to Blender
 
 # How To Build
 The building process is here consisting of two stages. In the first stage,
