@@ -19,26 +19,41 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             return
 
         ref_shapes_col = BU.get_referenceShapes_collection()
+        if self.report_initializing_debug_messages:
+            print(f"Discovered and using: '{ref_shapes_col.name}' for the collection with reference shapes")
+
         sphereObj = ref_shapes_col.objects.get(self.ref_shape_sphere_name)
         if sphereObj is None:
             print(f"Failed to find {self.ref_shape_sphere_name} in 'Reference shapes' collection, to use it as")
             print("the reference shape for SPHERES. Please, create a blender object of that name in that collection,")
             print("or change BlenderServerService's attribute 'ref_shape_sphere_name' to some other existing one.")
+        else:
+            if self.report_initializing_debug_messages:
+                print(f"Discovered and using: '{sphereObj.name}' for the sphere reference shape")
 
         lineObj = ref_shapes_col.objects.get(self.ref_shape_line_name)
         if lineObj is None:
             print(f"Failed to find {self.ref_shape_line_name} in 'Reference shapes' collection, to use it as")
             print("the reference shape for LINES. Please, create a blender object of that name in that collection,")
             print("or change BlenderServerService's attribute 'ref_shape_line_name' to some other existing one.")
+        else:
+            if self.report_initializing_debug_messages:
+                print(f"Discovered and using: '{lineObj.name}' for the line reference shape")
 
         vectorObj = ref_shapes_col.objects.get(self.ref_shape_vector_name)
         if vectorObj is None:
             print(f"Failed to find {self.ref_shape_vector_name} in 'Reference shapes' collection, to use it as")
             print("the reference shape for VECTORS. Please, create a blender object of that name in that collection,")
             print("or change BlenderServerService's attribute 'ref_shape_vector_name' to some other existing one.")
+        else:
+            if self.report_initializing_debug_messages:
+                print(f"Discovered and using: '{vectorObj.name}' for the vector reference shape")
 
         self.colored_ref_shapes_col = bpy.data.collections.get(self.colored_ref_shapes_col_name)
         if self.colored_ref_shapes_col is None:
+            if self.report_initializing_debug_messages:
+                print(f"Not found '{self.colored_ref_shapes_col_name}' collection of palettes with colored shapes")
+                print("-> Going to create such collection now...")
             self.colored_ref_shapes_col = bpy.data.collections.new(self.colored_ref_shapes_col_name)
             BU.get_referenceShapes_collection().children.link(self.colored_ref_shapes_col)
             #
@@ -49,6 +64,11 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             self.colored_ref_shapes_col["first line index"] = 0
             self.colored_ref_shapes_col["first sphere index"] = l_cnt
             self.colored_ref_shapes_col["first vector index"] = l_cnt + s_cnt
+            if self.report_initializing_debug_messages:
+                print(f"-> Created and using: '{self.colored_ref_shapes_col.name}' collection of palettes with colored shapes")
+        else:
+            if self.report_initializing_debug_messages:
+                print(f"Discovered and using: '{self.colored_ref_shapes_col.name}' collection of palettes with colored shapes")
 
 
     def tell_what_to_do_to_change_palette(self):
@@ -83,6 +103,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.report_individual_incoming_items = False
         self.report_individual_incoming_batches = True
         self.report_also_repeating_debug_messages = False
+        self.report_initializing_debug_messages = True
 
         # shape reference objects
         self.ref_shape_sphere_name = "refSphere"
