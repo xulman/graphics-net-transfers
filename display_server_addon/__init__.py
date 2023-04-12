@@ -1,8 +1,8 @@
 bl_info = {
     "name": "gRPC DisplayServer for Blender Viewing",
     "author": "Vladimir Ulman, Matthias Arzt",
-    "version": (0, 2, 0),
-    "blender": (3, 1, 2),
+    "version": (0, 2, 1),
+    "blender": (3, 3, 0),
     "location": "View3D > DisplayServer",
     "warning": "",
     "wiki_url": "https://github.com/xulman/graphics-net-transfers",

@@ -64,6 +64,8 @@ blender_server_addon = None
 
 
 def register():
+    if bpy.app.version[0] < 3 or bpy.app.version[1] < 3:
+        print(f"WARNING: DisplayServer needs at least v3.3, hosted now in {bpy.app.version_string}")
     bpy.app.timers.register(delayed_start_server, first_interval=1)
 
 def delayed_start_server():
