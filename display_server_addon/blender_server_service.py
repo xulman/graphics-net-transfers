@@ -71,6 +71,49 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
                 print(f"Discovered and using: '{self.colored_ref_shapes_col.name}' collection of palettes with colored shapes")
 
 
+    def is_sensible_reference_on_colored_nodes_collections(self):
+        if self.report_initializing_debug_messages:
+            print("Investigating if 'colored_ref_shapes_col' is sensible...")
+        #
+        if not self.colored_ref_shapes_col in bpy.data.collections.values():
+            if self.report_initializing_debug_messages:
+                print("-> Current 'colored_ref_shapes_col' is an invalid reference")
+            return False
+        else:
+            if self.report_initializing_debug_messages:
+                print(f"-> Current 'colored_ref_shapes_col' is a valid reference to '{self.colored_ref_shapes_col.name}'")
+        #
+        # the current reference on colored shapes points on something existing,
+        # is it valid? does it contain the right things?
+        if self.colored_ref_shapes_col.get("first line index") is None \
+        or self.colored_ref_shapes_col.get("first sphere index") is None \
+        or self.colored_ref_shapes_col.get("first vector index") is None:
+            if self.report_initializing_debug_messages:
+                print("-> The referenced collection is missing 'index properties'")
+            return False
+        #
+        pal_size = len(self.palette.palette)
+        line_cnt = self.colored_ref_shapes_col.get("first sphere index")-self.colored_ref_shapes_col.get("first line index")
+        sphere_cnt = self.colored_ref_shapes_col.get("first vector index")-self.colored_ref_shapes_col.get("first sphere index")
+        vector_cnt = len(self.colored_ref_shapes_col.objects)-self.colored_ref_shapes_col.get("first vector index")
+        if line_cnt != pal_size:
+            if self.report_initializing_debug_messages:
+                print(f"-> The referenced collection mismatches line objects count ({line_cnt}) with current palette size ({pal_size})")
+            return False
+        if sphere_cnt != pal_size:
+            if self.report_initializing_debug_messages:
+                print(f"-> The referenced collection mismatches spheres objects count ({sphere_cnt}) with current palette size ({pal_size})")
+            return False
+        if vector_cnt != pal_size:
+            if self.report_initializing_debug_messages:
+                print(f"-> The referenced collection mismatches vector objects count ({vector_cnt}) with current palette size ({pal_size})")
+            return False
+        #
+        if self.report_initializing_debug_messages:
+            print(f"-> The referenced collection seems to have corrent objects counts ({pal_size} per shape)")
+        return True
+
+
     def tell_what_to_do_to_change_palette(self):
         print('from display_server_addon.color_palette import ColorPalette as CP')
         print('#')
