@@ -12,9 +12,9 @@ import bpy
 
 class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
 
-    def rebuild_reference_colored_nodes_collections(self):
+    def check_and_rebuild_reference_colored_nodes_collections(self):
         if self.stop_and_wait_for_the_first_actual_use:
-            print("Skipping 'rebuild_reference_colored_nodes_collections()' until first real usage of this service...")
+            print("Skipping 'check_and_rebuild_reference_colored_nodes_collections()' until first real usage of this service...")
             print("...or activate explicitly yourself via BlenderServerService's 'do_postponed_initialization()' method")
             return
 
@@ -96,7 +96,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         # color palette
         self.palette = CP.ColorPalette()
         self.stop_and_wait_for_the_first_actual_use = not init_everything_now
-        self.rebuild_reference_colored_nodes_collections()
+        self.check_and_rebuild_reference_colored_nodes_collections()
 
         # ----- COMMUNICATION -----
         # to make sure that talking to Blender is serialized
@@ -124,7 +124,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         self.stop_and_wait_for_the_first_actual_use = False
         print("First real usage of this service detected, finalizing some late initializations...")
 
-        self.rebuild_reference_colored_nodes_collections()
+        self.check_and_rebuild_reference_colored_nodes_collections()
         print("Done finalizing some late initializations...\n")
 
 
