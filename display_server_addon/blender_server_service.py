@@ -18,9 +18,31 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             print("...or activate explicitly yourself via BlenderServerService's 'do_postponed_initialization()' method")
             return
 
+        # try to provide some ref ONLY when none has been given previously, otherwise try to stick
+        # to the current one as long as possible (tests will decide later whether we would keep it)
+        if self.colored_ref_shapes_col is None:
+            self.colored_ref_shapes_col = bpy.data.collections.get(self.colored_ref_shapes_col_name)
+        if self.is_sensible_reference_on_colored_nodes_collections():
+            # valid:
+            if self.report_initializing_debug_messages:
+                print(f"=> Discovered and using: '{self.colored_ref_shapes_col.name}' collection of palettes with colored shapes")
+            return
+        else:
+            # invalid:
+            if self.report_initializing_debug_messages:
+                print(f"=> Not found or invalid '{self.colored_ref_shapes_col_name}' collection of palettes with colored shapes")
+                print("=> Going to create such collection now...")
+            #
+            # make sure no other collection is blocking our wanted name self.colored_ref_shapes_col_name
+            old_col = bpy.data.collections.get(self.colored_ref_shapes_col_name)
+            if old_col is not None:
+                old_col.name = old_col.name+"_abandoned"
+                if self.report_initializing_debug_messages:
+                    print(f"=> Previous such collection was renamed to '{old_col.name}' from the reserved '{self.colored_ref_shapes_col_name}'")
+
         ref_shapes_col = BU.get_referenceShapes_collection()
         if self.report_initializing_debug_messages:
-            print(f"Discovered and using: '{ref_shapes_col.name}' for the collection with reference shapes")
+            print(f"=> Discovered and using: '{ref_shapes_col.name}' for the collection with reference shapes")
 
         sphereObj = ref_shapes_col.objects.get(self.ref_shape_sphere_name)
         if sphereObj is None:
@@ -29,7 +51,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             print("or change BlenderServerService's attribute 'ref_shape_sphere_name' to some other existing one.")
         else:
             if self.report_initializing_debug_messages:
-                print(f"Discovered and using: '{sphereObj.name}' for the sphere reference shape")
+                print(f"=> Discovered and using: '{sphereObj.name}' for the sphere reference shape")
 
         lineObj = ref_shapes_col.objects.get(self.ref_shape_line_name)
         if lineObj is None:
@@ -38,7 +60,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             print("or change BlenderServerService's attribute 'ref_shape_line_name' to some other existing one.")
         else:
             if self.report_initializing_debug_messages:
-                print(f"Discovered and using: '{lineObj.name}' for the line reference shape")
+                print(f"=> Discovered and using: '{lineObj.name}' for the line reference shape")
 
         vectorObj = ref_shapes_col.objects.get(self.ref_shape_vector_name)
         if vectorObj is None:
@@ -47,28 +69,20 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
             print("or change BlenderServerService's attribute 'ref_shape_vector_name' to some other existing one.")
         else:
             if self.report_initializing_debug_messages:
-                print(f"Discovered and using: '{vectorObj.name}' for the vector reference shape")
+                print(f"=> Discovered and using: '{vectorObj.name}' for the vector reference shape")
 
-        self.colored_ref_shapes_col = bpy.data.collections.get(self.colored_ref_shapes_col_name)
-        if self.colored_ref_shapes_col is None:
-            if self.report_initializing_debug_messages:
-                print(f"Not found '{self.colored_ref_shapes_col_name}' collection of palettes with colored shapes")
-                print("-> Going to create such collection now...")
-            self.colored_ref_shapes_col = bpy.data.collections.new(self.colored_ref_shapes_col_name)
-            BU.get_referenceShapes_collection().children.link(self.colored_ref_shapes_col)
-            #
-            l_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('L', lineObj,   self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
-            s_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('S', sphereObj, self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
-            v_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('V', vectorObj, self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
-            #
-            self.colored_ref_shapes_col["first line index"] = 0
-            self.colored_ref_shapes_col["first sphere index"] = l_cnt
-            self.colored_ref_shapes_col["first vector index"] = l_cnt + s_cnt
-            if self.report_initializing_debug_messages:
-                print(f"-> Created and using: '{self.colored_ref_shapes_col.name}' collection of palettes with colored shapes")
-        else:
-            if self.report_initializing_debug_messages:
-                print(f"Discovered and using: '{self.colored_ref_shapes_col.name}' collection of palettes with colored shapes")
+        self.colored_ref_shapes_col = bpy.data.collections.new(self.colored_ref_shapes_col_name)
+        BU.get_referenceShapes_collection().children.link(self.colored_ref_shapes_col)
+        #
+        l_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('L', lineObj,   self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
+        s_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('S', sphereObj, self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
+        v_cnt = self.palette.create_blender_reference_colored_nodes_into_existing_collection('V', vectorObj, self.colored_ref_shapes_col, hide_colored_shape_objs = self.hide_color_palette_obj)
+        #
+        self.colored_ref_shapes_col["first line index"] = 0
+        self.colored_ref_shapes_col["first sphere index"] = l_cnt
+        self.colored_ref_shapes_col["first vector index"] = l_cnt + s_cnt
+        if self.report_initializing_debug_messages:
+            print(f"=> Created and using: '{self.colored_ref_shapes_col.name}' collection of palettes with colored shapes")
 
 
     def is_sensible_reference_on_colored_nodes_collections(self):
