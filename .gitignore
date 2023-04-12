@@ -1,7 +1,7 @@
 .DS_Store
 .*.sw?
 
-*/__pycache__
+__pycache__
 peer_in_java/target
 peer_in_cpp/build*
 peer_in_cpp/BUILD*
