@@ -13,8 +13,8 @@ import bpy
 class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
 
     def check_and_rebuild_reference_colored_nodes_collections(self):
-        if self.stop_and_wait_for_the_first_actual_use:
-            print("Skipping 'check_and_rebuild_reference_colored_nodes_collections()' until first real usage of this service...")
+        if self.stop_and_wait_until_inicialization_is_complete:
+            print("Skipping 'check_and_rebuild_reference_colored_nodes_collections()' until next time...")
             print("...or activate explicitly yourself via BlenderServerService's 'do_postponed_initialization()' method")
             return
 
@@ -167,7 +167,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
         # color palette
         self.palette = CP.ColorPalette()
-        self.stop_and_wait_for_the_first_actual_use = not init_everything_now
+        self.stop_and_wait_until_inicialization_is_complete = not init_everything_now
         self.check_and_rebuild_reference_colored_nodes_collections()
 
         # ----- COMMUNICATION -----
@@ -192,16 +192,16 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
         # happen only when the correct project is opened);
         #
         # in general, the methods listed below should be guarding themselves
-        # with the self.stop_and_wait_for_the_first_actual_use()
-        self.stop_and_wait_for_the_first_actual_use = False
-        print("First real usage of this service detected, finalizing some late initializations...")
+        # with the self.stop_and_wait_until_inicialization_is_complete()
+        self.stop_and_wait_until_inicialization_is_complete = False
+        print("Requested to finalize some late initializations...")
 
         self.check_and_rebuild_reference_colored_nodes_collections()
         print("Done finalizing some late initializations...\n")
 
 
     def runs_when_blender_allows(self):
-        if self.stop_and_wait_for_the_first_actual_use:
+        if self.stop_and_wait_until_inicialization_is_complete:
             self.do_postponed_initialization()
         if self.request_callback_routine is not None:
             try:
