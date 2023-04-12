@@ -319,7 +319,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
             if self.report_individual_incoming_batches:
                 print(f"Request from {self.report_client(request.clientID)} to display into collection '{request.collectionName}'.")
-                print(f"Server creates object '{request.dataName}' (ID: {request.dataID}) "
+                print(f"Server fills into object '{request.dataName}' (ID: {request.dataID}) "
                     f"with {len(request.spheres)} spheres, {len(request.lines)} lines and {len(request.vectors)} vectors.")
 
             clientName = request.clientID.clientName
