@@ -243,6 +243,7 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
 
     def introduceClient(self, request: PROTOCOL.ClientHello, context):
+        self.stop_and_wait_until_inicialization_is_complete = True
         self.submit_work_for_Blender_and_wait(self.introduceClient_worker, request, "introduceClient()")
         return PROTOCOL.Empty()
 
