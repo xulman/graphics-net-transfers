@@ -114,7 +114,7 @@ def main() -> None:
         one_message = PROTOCOL.BatchOfGraphics()
         one_message.clientID.clientName = clientName
         one_message.collectionName = "mixed content"
-        one_message.dataName = "vecs and lines at TP = 2"
+        one_message.dataName = "vecs at TP = 2-5, and lines TP = 3-6"
         one_message.dataID = 15
         #
         for i in range(0,noOfSpheres,2):
@@ -124,7 +124,8 @@ def main() -> None:
             vecParams.endPos.x = vecParams.startPos.x
             vecParams.endPos.y = vecParams.startPos.y + sin(3.14159*float(i)/20.0)
             vecParams.endPos.z = 2.1
-            vecParams.time = 2
+            vecParams.span.timeFrom = 1.9
+            vecParams.span.timeTill = 5.1
             vecParams.radius = 0.2
             colorShade = (1 + i%3) * 80
             vecParams.colorXRGB = rgb_to_integer(255//(i+1),0,colorShade)
@@ -137,7 +138,8 @@ def main() -> None:
             lineParams.endPos.x = lineParams.startPos.x
             lineParams.endPos.y = lineParams.startPos.y + sin(3.14159*float(i)/20.0)
             lineParams.endPos.z = 2.1
-            lineParams.time = 2
+            lineParams.span.timeFrom = 2.8
+            lineParams.span.timeTill = 6.2
             lineParams.radius = 0.2
             colorShade = (1 + i%3) * 80
             lineParams.colorXRGB = rgb_to_integer(255//(i+1),0,colorShade)

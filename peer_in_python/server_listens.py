@@ -37,11 +37,14 @@ class ServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer):
                 f"with {len(request.spheres)} spheres, {len(request.lines)} lines and {len(request.vectors)} vectors.")
 
             for sphere in request.spheres:
-                print(f"Sphere at {self.report_vector(sphere.centre)}@{sphere.time}, radius={sphere.radius}")
+                timeSpec = str(sphere.time) if sphere.HasField('time') else f"{sphere.span.timeFrom}-{sphere.span.timeTill}"
+                print(f"Sphere at {self.report_vector(sphere.centre)}@{timeSpec}, radius={sphere.radius}")
             for line in request.lines:
-                print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}@{line.time}, radius={line.radius}")
+                timeSpec = str(line.time) if line.HasField('time') else f"{line.span.timeFrom}-{line.span.timeTill}"
+                print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}@{timeSpec}, radius={line.radius}")
             for vec in request.vectors:
-                print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}@{vec.time}, radius={vec.radius}")
+                timeSpec = str(vec.time) if vec.HasField('time') else f"{vec.span.timeFrom}-{vec.span.timeTill}"
+                print(f"Vector from {self.report_vector(vec.startPos)} to {self.report_vector(vec.endPos)}@{timeSpec}, radius={vec.radius}")
         return PROTOCOL.Empty()
 
 
