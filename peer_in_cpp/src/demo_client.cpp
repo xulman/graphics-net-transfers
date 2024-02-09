@@ -45,7 +45,7 @@ int main() {
 	//sending batches of graphics (collections of spheres)
 	grpc::ClientContext context;
 	proto::Empty empty;
-	std::unique_ptr< grpc::ClientWriter<proto::BatchOfGraphics> > writer( stub->addGraphics(&context, &empty) );
+	std::unique_ptr< grpc::ClientWriter<proto::BatchOfGraphics> > writer( stub->replaceGraphics(&context, &empty) );
 
 	proto::Vector3D refCoord;
 	refCoord.set_x(2.0f);
@@ -55,7 +55,7 @@ int main() {
 	for (int id = 20; id < 25; ++id) {
 		auto batch = proto::BatchOfGraphics();
 		batch.mutable_clientid()->set_clientname(CLIENT_NAME);
-		batch.set_collectionname("default content");
+		batch.set_collectionname("Spheres at 2,3; Vectors at 3-6");
 		batch.set_dataname( std::string("testing batch id ").append( std::to_string(id) ) );
 		batch.set_dataid(id);
 
@@ -80,8 +80,10 @@ int main() {
 		proto::VectorParameters* vec = batch.add_vectors();
 		vec->mutable_startpos()->CopyFrom(refCoord);
 		vec->mutable_endpos()->CopyFrom(refCoord);
+		vec->mutable_endpos()->set_x(5*(id-19));
 		vec->mutable_endpos()->set_z(23);
-		vec->set_time(3);
+		vec->mutable_span()->set_timefrom(3);
+		vec->mutable_span()->set_timetill(6.1);
 		vec->set_radius(2.2);
 		vec->set_coloridx(2);
 
