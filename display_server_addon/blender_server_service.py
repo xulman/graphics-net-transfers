@@ -368,54 +368,57 @@ class BlenderServerService(buckets_with_graphics_pb2_grpc.ClientToServerServicer
 
     def addSphere(self, instancing_data, index, sphere:PROTOCOL.SphereParameters, mat_offset:int):
         colorIdx = self.getColorIdx(sphere)
+        tFrom,tTill = (sphere.time-0.5,sphere.time+0.5) if sphere.HasField('time') else (sphere.span.timeFrom,sphere.span.timeTill)
 
         if self.report_individual_incoming_items:
             print(f"Sphere at {self.report_vector(sphere.centre)}"
-                +f"@{sphere.time}, radius={sphere.radius}, colorIdx={colorIdx} (+{mat_offset})")
+                +f"@{tFrom}-{tTill}, radius={sphere.radius}, colorIdx={colorIdx} (+{mat_offset})")
 
         instancing_data.vertices[index].co.x = sphere.centre.x
         instancing_data.vertices[index].co.y = sphere.centre.y
         instancing_data.vertices[index].co.z = sphere.centre.z
         instancing_data.attributes['start_pos'].data[index].vector = [0,0,0]
         instancing_data.attributes['end_pos'].data[index].vector = [0,0,sphere.radius]
-        instancing_data.attributes['time_from'].data[index].value = sphere.time - 0.5
-        instancing_data.attributes['time_to'].data[index].value = sphere.time + 0.5
+        instancing_data.attributes['time_from'].data[index].value = tFrom
+        instancing_data.attributes['time_to'].data[index].value = tTill
         instancing_data.attributes['radius'].data[index].value = sphere.radius
         instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
 
     def addLine(self, instancing_data, index, line:PROTOCOL.LineParameters, mat_offset:int):
         colorIdx = self.getColorIdx(line)
+        tFrom,tTill = (line.time-0.5,line.time+0.5) if line.HasField('time') else (line.span.timeFrom,line.span.timeTill)
 
         if self.report_individual_incoming_items:
             print(f"Line from {self.report_vector(line.startPos)} to {self.report_vector(line.endPos)}"
-                +f"@{line.time}, radius={line.radius}, colorIdx={colorIdx} (+{mat_offset})")
+                +f"@{tFrom}-{tTill}, radius={line.radius}, colorIdx={colorIdx} (+{mat_offset})")
 
         instancing_data.vertices[index].co.x = line.startPos.x
         instancing_data.vertices[index].co.y = line.startPos.y
         instancing_data.vertices[index].co.z = line.startPos.z
         instancing_data.attributes['start_pos'].data[index].vector = [line.startPos.x,line.startPos.y,line.startPos.z]
         instancing_data.attributes['end_pos'].data[index].vector = [line.endPos.x,line.endPos.y,line.endPos.z]
-        instancing_data.attributes['time_from'].data[index].value = line.time - 0.5
-        instancing_data.attributes['time_to'].data[index].value = line.time + 0.5
+        instancing_data.attributes['time_from'].data[index].value = tFrom
+        instancing_data.attributes['time_to'].data[index].value = tTill
         instancing_data.attributes['radius'].data[index].value = line.radius
         instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 
 
     def addVector(self, instancing_data, index, vector:PROTOCOL.VectorParameters, mat_offset:int):
         colorIdx = self.getColorIdx(vector)
+        tFrom,tTill = (vector.time-0.5,vector.time+0.5) if vector.HasField('time') else (vector.span.timeFrom,vector.span.timeTill)
 
         if self.report_individual_incoming_items:
             print(f"Vector from {self.report_vector(vector.startPos)} to {self.report_vector(vector.endPos)}"
-                +f"@{vector.time}, radius={vector.radius}, colorIdx={colorIdx} (+{mat_offset})")
+                +f"@{tFrom}-{tTill}, radius={vector.radius}, colorIdx={colorIdx} (+{mat_offset})")
 
         instancing_data.vertices[index].co.x = vector.startPos.x
         instancing_data.vertices[index].co.y = vector.startPos.y
         instancing_data.vertices[index].co.z = vector.startPos.z
         instancing_data.attributes['start_pos'].data[index].vector = [vector.startPos.x,vector.startPos.y,vector.startPos.z]
         instancing_data.attributes['end_pos'].data[index].vector = [vector.endPos.x,vector.endPos.y,vector.endPos.z]
-        instancing_data.attributes['time_from'].data[index].value = vector.time - 0.5
-        instancing_data.attributes['time_to'].data[index].value = vector.time + 0.5
+        instancing_data.attributes['time_from'].data[index].value = tFrom
+        instancing_data.attributes['time_to'].data[index].value = tTill
         instancing_data.attributes['radius'].data[index].value = vector.radius
         instancing_data.attributes['material_idx'].data[index].value = colorIdx+mat_offset
 

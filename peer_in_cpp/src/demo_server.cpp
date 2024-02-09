@@ -20,6 +20,18 @@ std::string print_coord(const proto::Vector3D& vec) {
 	return oss.str();
 }
 
+std::string print_timePoint(const int time) {
+	std::ostringstream oss;
+	oss << time;
+	return oss.str();
+}
+
+std::string print_timeSpan(const proto::TimeSpan& tspan) {
+	std::ostringstream oss;
+	oss << tspan.timefrom() << "-" << tspan.timetill();
+	return oss.str();
+}
+
 class IncomingGraphicsProcessor final : public proto::ClientToServer::Service {
   public:
 	grpc::Status introduceClient(grpc::ServerContext*,
@@ -51,17 +63,20 @@ class IncomingGraphicsProcessor final : public proto::ClientToServer::Service {
 
 			for (const auto & sph : batch.spheres()) {
 				std::cout << "Sphere at " << print_coord(sph.centre())
-				          << "@" << sph.time() << ", radius=" << sph.radius() << "\n";
+				          << "@" << ( sph.has_time() ? print_timePoint(sph.time()) : print_timeSpan(sph.span()) )
+				          << ", radius=" << sph.radius() << "\n";
 			}
 			for (const auto & line : batch.lines()) {
 				std::cout << "Line from " << print_coord(line.startpos())
 				          << " to " << print_coord(line.endpos())
-				          << "@" << line.time() << ", radius=" << line.radius() << "\n";
+				          << "@" << ( line.has_time() ? print_timePoint(line.time()) : print_timeSpan(line.span()) )
+				          << ", radius=" << line.radius() << "\n";
 			}
 			for (const auto & vec : batch.vectors()) {
 				std::cout << "Vector from " << print_coord(vec.startpos())
 				          << " to " << print_coord(vec.endpos())
-				          << "@" << vec.time() << ", radius=" << vec.radius() << "\n";
+				          << "@" << ( vec.has_time() ? print_timePoint(vec.time()) : print_timeSpan(vec.span()) )
+				          << ", radius=" << vec.radius() << "\n";
 			}
 		}
 
